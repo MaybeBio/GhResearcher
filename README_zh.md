@@ -1,46 +1,46 @@
 # GhResearcher 🔬
 
-A powerful GitHub Code & Repo Analysis CLI for Researchers, designed to track activities, scrape repository contexts, and search intelligently—**without leaving YOUR terminal**.
+专为科研人员、开发者与技术爱好者打造的 GitHub 代码与仓库分析终端工具（CLI）。让你**无需离开终端（Terminal）**，即可追踪学术大牛动态、抓取仓库上下文文件、并进行高级搜索。
 
 ---
 
-## 📖 Introduction
+## 📖 简介 / Introduction
 
-**GhResearcher** is a terminal-based toolkit built for researchers, developers, and tech enthusiasts who need to keep a close eye on the open-source ecosystem. Instead of navigating through web interfaces, GhResearcher leverages the GitHub REST API and GitHub CLI (`gh`) to bring timelines, repository structures, and multi-domain searches directly to your command line. 
+**GhResearcher** 是一个极简而强大的终端工具集。它基于 GitHub REST API 和 GitHub CLI (`gh`) 开发，旨在将 GitHub 的海量信息流、仓库结构以及代码搜索带入命令行中。
 
-Whether you want to track a specific expert's "feed", monitor the activities of a lab/organization, or quickly dump a repository's structure into an LLM-friendly context file, GhResearcher provides the necessary utilities in a clean, terminal-native format powered by `Rich` and `Typer`.
+无论你是想追踪某位领域专家的“朋友圈”、监控某个实验室（组织）的代码产出，还是想快速将一个庞大仓库的结构导出为供大语言模型（LLM）阅读的上下文 Markdown 文件，GhResearcher 都能通过 `Rich` 和 `Typer` 提供优美、直观且高效的终端交互体验。
 
-## 🧠 Design Philosophy
+## 🧠 设计哲学 / Design Philosophy
 
-- **Curing "Free-Range" Research:** Many researchers and grad students (especially in computational fields) feel isolated without daily guidance. This tool acts as your academic "social feed" for code. By tracking what experts and labs are actively working on, it keeps you involved, gives you clear targets, and ensures you stay motivated and closely aligned with mainstream developments.
-- **Terminal First:** Keep you in the flow. No context switching to a web browser.
-- **Data Density:** Present maximum information with minimal clutter. Long commit hashes are truncated; pagination is handled automatically.
-- **LLM-Friendly:** Commands like `scrape` are explicitly designed to generate `.md` files that can be directly fed into Language Models for code analysis and project understanding.
-- **Privacy & Security:** Relies entirely on your local `gh` authentication. No third-party servers, no telemetry.
-
----
-
-## ✨ Features
-
-- **Dynamic Tracking (`monitor`)**: 
-  - Track events from Users, Organizations (`--org`), or specific Repositories (`--repo`).
-  - Read a user's GitHub Feed (`--received`) to see what experts are paying attention to.
-  - Seamless pagination handling to bypass standard API constraints.
-- **Repository Scraper (`scrape`)**:
-  - Automatically clone (shallow) and generate a Markdown file containing the project's README, description, and an ASCII directory tree.
-- **Multi-domain Search (`search`)**:
-  - Quickly search across repos, code, issues, and pull requests.
+- **告别“放养”状态 (Curing Free-Range Research):** 很多研究生（特别是计算方向）常处于“放养”状态，缺乏日常指导。GhResearcher 让你像刷推特、刷“代码朋友圈”一样，时刻追踪领域内学者和大牛们的最新动向。它不仅能为你提供极佳的参考和目标，让你在科研和写代码时更有干劲，更能让你保持极强的学术参与感，确保你的精力始终跟紧主流前沿而不偏离方向。
+- **终端优先 (Terminal First):** 保持心流，无需频繁切换回浏览器。
+- **高信息密度 (Data Density):** 紧凑输出。长哈希值自动截断，分页无缝处理，过滤冗余信息。
+- **AI 友好 (LLM-Friendly):** 诸如 `scrape` 命令，专为生成供 ChatGPT/Claude 阅读的 `.md` 上下文文件而设计。
+- **隐私与安全 (Privacy & Security):** 完全依赖你本地的 `gh` CLI 凭证，无需第三方代理，不收集任何使用数据。
 
 ---
 
-## ⚙️ Installation
+## ✨ 核心特性 / Features
 
-### Prerequisites
+- **动态追踪 (`monitor`)**: 
+  - 支持追踪指定 用户 (User)、组织 (`--org`) 或特定仓库 (`--repo`) 的动态事件。
+  - 支持“信息流”追踪 (`--received`)：看看大牛关注的人和仓库最近在干什么。
+  - 自动处理分页，突破单次 API 拉取上限，并能对 PR/Issue/Release 生成富文本标题。
+- **仓库上下文抓取 (`scrape`)**:
+  - 自动浅克隆仓库并生成一个包含项目 README、描述及全景 ASCII 目录树的 Markdown 文件。
+- **多领域搜索 (`search`)**:
+  - 支持在终端内直接检索仓库、代码片段、Issue 以及 Pull Request。
+
+---
+
+## ⚙️ 安装说明 / Installation
+
+### 环境依赖
 1. **Python 3.8+**
-2. **GitHub CLI (`gh`)**: You must have the [GitHub CLI](https://github.com/cli/cli) installed and authenticated.
+2. **GitHub CLI (`gh`)**: 必须在本地安装 [gh](https://github.com/cli/cli) 命令行工具，并完成账号授权。
    ```bash
-   # 1. Install gh (Ubuntu/Debian example)
-   # follow https://github.com/cli/cli/blob/trunk/docs/install_linux.md#debian
+   # 1. 安装 gh (以 Ubuntu/Debian 为例)
+   # 参考: https://github.com/cli/cli/blob/trunk/docs/install_linux.md#debian
    (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
 	&& sudo mkdir -p -m 755 /etc/apt/keyrings \
 	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
@@ -51,41 +51,39 @@ Whether you want to track a specific expert's "feed", monitor the activities of 
 	&& sudo apt update \
 	&& sudo apt install gh -y
 
-
-
-   # 2. Authenticate with your GitHub account
+   # 2. 登录并授权你的 GitHub 账号
    gh auth login
    ```
 
-### Install GhResearcher
-Clone the repository and install it via `pip`:
+### 安装 GhResearcher
+克隆此仓库并使用 `pip` 进行本地安装：
 ```bash
 git clone https://github.com/MaybeBio/GhResearcher.git
 cd GhResearcher
 pip install -e .
 ```
-Verify the installation:
+验证安装是否成功：
 ```bash
 ghresearcher --help
 ```
 
 ---
 
-## 🚀 Usage Guide
+## 🚀 使用指南 / Usage Guide
 
-### 1. Monitoring Activities (`monitor`)
+### 1. 动态监控 (`monitor`)
 
-The `monitor` command provides a unified chronological timeline of GitHub activities.
+`monitor` 命令提供了一个统一的 GitHub 动态时间轴，就像浏览代码的朋友圈一样。
 
-**Usage:** `ghresearcher monitor [OPTIONS] [TARGET]`
+**语法:** `ghresearcher monitor [选项] [目标]`
 
-#### Monitor a Single User
-Track the public actions of a specific developer (e.g., pushes, stars, forks).
+#### 监控单个用户
+追踪特定开发者的公开行为（例如：推送代码、Star 仓库、Fork 等）。
 ```bash
 ghresearcher monitor MaybeBio -l 5
 ```
 
-what you get is:
+执行后你将看到类似如下的输出（What you get is）：
 ```python
 Fetching events for target(s): MaybeBio...
 
@@ -96,13 +94,13 @@ Fetching events for target(s): MaybeBio...
 2026-05-12 18:59:39 | 🆕 MaybeBio created branch 'main' at MaybeBio/GhResearcher
 ```
 
-
-#### Monitor an Organization (`--org`)
-Track the collective public events of an entire organization or lab. This is highly useful for following research groups' release updates or code pushes.
+#### 监控组织 / 实验室 (`--org`)
+将目标解释为组织（Organization）。非常适合用于跟踪某个大学实验室或开源团队的整体产出动态（Release 追踪、大规模 Push）。
 ```bash
 ghresearcher monitor GENTEL-lab --org
 ```
-what you get is
+
+执行后你将看到类似如下的输出（What you get is）：
 ```python 
 Fetching events for target(s): GENTEL-lab...
 
@@ -138,13 +136,13 @@ Fetching events for target(s): GENTEL-lab...
 2026-05-02 18:09:32 | ⭐️ 81davejohnson80 starred GENTEL-lab/EVA
 ```
 
-#### Monitor a specific Repository (`--repo`)
-Focus cleanly on the event stream of a single repository (e.g., releases, issues, PRs, stars).
+#### 监控特定仓库 (`--repo`)
+仅专注于某个单一仓库的事件流。这可以帮助你密切关注自己或他人重点项目的 Issue 变动、PR 提交和 Release 发布。
 ```bash
 ghresearcher monitor isblab/disobind --repo -l 20
 ```
 
-what you get is
+执行后你将看到类似如下的输出（What you get is）：
 ```python
 Fetching events for target(s): isblab/disobind...
 
@@ -153,12 +151,14 @@ Fetching events for target(s): isblab/disobind...
 2026-04-23 13:41:51 | 🍴 paolellopotanovic-ctrlxiaoke forked isblab/disobind
 ```
 
-#### Monitor a User's Feed (`--received`)
-Discover new tools by looking at what an expert is watching. This fetches the "received events" feed (similar to the GitHub homepage feed).
+
+
+#### 窥探大牛的视野 / 信息流 (`--received`)
+不看他做了什么，而是看他关注了什么。获取该用户的“接收事件”，相当于查看他的 GitHub 主页信息流。这是发现前沿好工具的绝佳途径。
 ```bash
 ghresearcher monitor teorth --received
 ```
-what you get is
+执行后你将看到类似如下的输出（What you get is）：
 
 ```python
 Fetching events for target(s): teorth...
@@ -207,49 +207,48 @@ substep 2), cowritten with Grok'
 AlexKontorovich/PrimeNumberTheoremAnd
 ```
 
-
-#### Batch Monitoring
-Pass a text file with multiple targets (one per line) to merge their activities into a single global timeline.
+#### 批量订阅监控
+针对一个写满用户名的纯文本文件（每行一个目标），GhResearcher 会并发抓取所有人动态，并按时间戳降序融合成一个全局时间线。
 ```bash
 ghresearcher monitor -f experts.txt --since 2026-05-01 --until 2026-05-12
 ```
 
-#### Expanded Commits
-By default, long pushes are truncated. Use `--expand-commits` to fetch detailed commit messages via additional API calls.
+#### 详尽的 Commit 展示 (`--expand-commits`)
+默认情况下，冗长的 `PushEvent` 只显示精简信息。如果你想额外发起 API 请求去获取详细的 Commit message，可以开启此选项。
 ```bash
 ghresearcher monitor teorth --expand-commits
 ```
 
 ---
 
-### 2. Scraping Repository Context (`scrape`)
+### 2. 抓取仓库上下文 (`scrape`)
 
-Dumps a repository's metadata, README, and directory tree into a single `Context.md` file, perfect for sharing context with ChatGPT or Claude.
+将目标仓库的基础元数据、README 以及完整目录树打包成单个 `Context.md` 文件。遇到大型代码库无从下手时，把这个文件直接扔给 LLM 帮你梳理架构。
 
-**Usage:** `ghresearcher scrape [REPO]`
+**语法:** `ghresearcher scrape [REPO]`
 
 ```bash
 ghresearcher scrape isblab/disobind -o Disobind_Context.md
 ```
-*Note: This performs a shallow clone (`git clone --depth 1`) in a temporary directory to generate the tree efficiently.*
+*注：此命令会在系统临时目录执行浅克隆 (`git clone --depth 1`) 以提高目录树生成效率，不会拉取历史冗余数据。*
 
 ---
 
-### 3. Searching GitHub (`search`)
+### 3. 多维度搜索 (`search`)
 
-Perform tailored searches from the terminal.
+在终端内发起高度定制化的检索。
 
-**Usage:** `ghresearcher search [item_type] [query]`
+**语法:** `ghresearcher search [搜索类型] [关键词]`
 
 ```bash
-# Search for repositories related to "Deep Learning"
+# 搜索和 "Deep Learning" 相关的 Python 仓库，最多返回 10 条
 ghresearcher search repos "Deep Learning" -L Python -l 10
 ```
 
 ---
 
-## ⚠️ Limits & Caveats
+## ⚠️ 注意事项与限制 / Limits & Caveats
 
-- **GitHub API Limits:** The `monitor` timeline is restricted to a maximum of 300 recent events or events within the past 90 days due to GitHub API constraints.
-- **Scraper Size:** The `scrape` command currently builds the tree in memory and clones the repository. Extremely massive repositories (10,000+ files) may take longer or consume significant memory.
-- **Rate Limiting:** Heavy use of `--expand-commits` or batch mapping large lists may quickly consume your GitHub API rate limit. Use with care.
+- **GitHub 原生 API 限制:** 无论是普通用户、组织还是仓库的 Events 接口，受 GitHub 官方限制，最多只能追溯最近 90 天内或最近的 300 条动态。
+- **克隆与解析开销 (`scrape`):** 面对拥有数万个文件（如超级巨石型仓库）的项目，在内存中构建 ASCII 目录树会占用一定的时间和资源。
+- **速率限制 (Rate Limit):** 频繁开启 `--expand-commits` 进行海量并发查询，或极高频率地调用搜索接口，可能导致你的 GitHub CLI 授权触发访问速率限制。请根据实际需求合理设定抓取极限 (`-l`) 与起止日期 (`--since` / `--until`)。
