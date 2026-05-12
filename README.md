@@ -1,5 +1,7 @@
 # GhResearcher 🔬
 
+[En](README.md) | [中文](README_zh.md)
+
 A powerful GitHub Code & Repo Analysis CLI for Researchers, designed to track activities, scrape repository contexts, and search intelligently—**without leaving YOUR terminal**.
 
 ---
