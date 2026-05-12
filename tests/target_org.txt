@@ -1,0 +1,54 @@
+# https://github.com/kiharalab，蛋白质结构建模
+kiharalab
+
+# https://github.com/honig-lab，蛋白质互作
+honig-lab
+
+# https://github.com/ai4protein，蛋白质结构建模，设计
+ai4protein
+
+# https://github.com/GENTEL-lab，蛋白质互作
+GENTEL-lab
+
+# https://github.com/steineggerlab，蛋白质结构建模工具
+steineggerlab
+
+# https://github.com/biomed-AI，蛋白质互作
+biomed-AI
+
+# https://github.com/BioComputingUP, idr组织
+BioComputingUP
+
+# https://github.com/ProteinDesignLab，蛋白质设计
+ProteinDesignLab
+
+# https://github.com/sparks-lab-org，蛋白质设计
+sparks-lab-org
+
+# https://github.com/baker-laboratory，蛋白质设计
+baker-laboratory
+
+# https://github.com/Graylab，蛋白质设计，结构预测
+Graylab
+
+# https://github.com/isblab，蛋白质结构互作
+isblab
+
+# https://github.com/THGLab，idr、蛋白质物理
+THGLab
+
+# https://github.com/HFChenLab，idr、蛋白质互作
+HFChenLab
+
+# https://github.com/idptools，idr核心，工作
+idptools
+
+# https://github.com/holehouse-lab，idr核心
+holehouse-lab
+
+# https://github.com/Pappulab，idr核心，生物物理
+Pappulab
+
+# https://github.com/KULL-Centre，蛋白质结构，构象
+KULL-Centre
+

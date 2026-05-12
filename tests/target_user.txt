@@ -1,4 +1,20 @@
-# Below is my example ,focus on protein structure & DL
+# https://github.com/alexholehouse，idr核心组
+alexholehouse
+
+# https://github.com/Junjie-Zhu，idr
+Junjie-Zhu
+
+# https://github.com/sirius777coder，蛋白质设计、结构
+sirius777coder
+
+# https://github.com/Zuricho，蛋白质设计、结构
+Zuricho
+
+# https://github.com/Immortals-33，蛋白质设计、结构
+Immortals-33
+
+# https://github.com/lujiarui，蛋白质构象
+lujiarui
 
 # https://github.com/ChenDdon
 ChenDdon
@@ -15,4 +31,8 @@ bjing2016
 # https://github.com/tyang816
 tyang816
 
-# 
+# https://github.com/prokia
+prokia
+
+# https://github.com/Gonglab-THU，蛋白质结构，MD
+Gonglab-THU
