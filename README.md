@@ -23,7 +23,7 @@ ghresearcher monitor [OPTIONS] [TARGET]
 ```
 
 **Arguments:**
-- `TARGET`: The GitHub username or organization you want to monitor (e.g., `bioqxu` or `GENTEL-lab`). [Optional if using `--file`]
+- `TARGET`: The GitHub username or organization you want to monitor (e.g., `teorth` or `GENTEL-lab`). [Optional if using `--file`]
 
 **Options:**
 - `-f, --file PATH`: File containing GitHub targets (one per line) for batch monitoring.
@@ -55,7 +55,7 @@ ghresearcher monitor [OPTIONS] [TARGET]
 **Examples:**
 1. **Track a developer's public actions** (What did they do recently?):
    ```bash
-   ghresearcher monitor bioqxu
+   ghresearcher monitor teorth
    ```
 2. **Batch monitor an expert group** (Merge events from users in a file into one timeline):
    ```bash
@@ -64,7 +64,7 @@ ghresearcher monitor [OPTIONS] [TARGET]
 3. **Track a developer's information feed** (What are the people/repos they follow doing?):
    ```bash
    # This is great for discovering new tool landscapes curated by experts
-   ghresearcher monitor bioqxu --received
+   ghresearcher monitor teorth --received
    ```
 4. **Track a repository directly** (Watch the event stream for one repo):
    ```bash
@@ -82,7 +82,7 @@ ghresearcher monitor [选项] [用户名]
 ```
 
 **命令参数:**
-- `USERNAME/OWNER/REPO`: 你想要监控的核心目标 GitHub 用户名、组织名或仓库名 (例如：`bioqxu`、`GENTEL-lab`、`isblab/disobind`)。[结合 `--file` 使用时非必填参数]
+- `USERNAME/OWNER/REPO`: 你想要监控的核心目标 GitHub 用户名、组织名或仓库名 (例如：`teorth`、`GENTEL-lab`、`isblab/disobind`)。[结合 `--file` 使用时非必填参数]
 
 **可选参数 (Options):**
 - `-f, --file 文件路径`: 包含多名 GitHub 用户名的文本文件（每行一个），用于批量监控。
@@ -103,7 +103,7 @@ ghresearcher monitor [选项] [用户名]
 **实战用法示例:**
 1. **追踪佬本人的公开行为** (他最近干了啥？是否推送了新仓库？):
    ```bash
-   ghresearcher monitor bioqxu
+   ghresearcher monitor teorth
    ```
 2. **批量订阅指定专家的开源朋友圈** (读取列表，截取特定五一假期间动态):
    ```bash
@@ -120,7 +120,7 @@ ghresearcher monitor [选项] [用户名]
 5. **窥探大佬的信息流/视野** (他关注的同行最近在搞什么黑科技？):
    ```bash
    # 这相当于借用目标大佬的视角来进行文献和工具拓荒
-   ghresearcher monitor bioqxu -r
+   ghresearcher monitor teorth -r   
    ```
 
 
