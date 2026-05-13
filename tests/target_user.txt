@@ -4,6 +4,9 @@ alexholehouse
 # https://github.com/Junjie-Zhu，idr
 Junjie-Zhu
 
+# https://github.com/HFChenLab，idr、蛋白质互作、同上组
+HFChenLab
+
 # https://github.com/sirius777coder，蛋白质设计、结构
 sirius777coder
 

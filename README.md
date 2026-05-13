@@ -79,12 +79,31 @@ ghresearcher --help
 
 The `monitor` command provides a unified chronological timeline of GitHub activities.
 
+Three important commands daily for me:
+```python
+# you can change the target file to your own file
+
+# yesterday to today activities of my followed experts
+ghresearcher monitor -f /data2/GhResearcher/tests/target_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits
+
+# yesterday to today activities of my followed experts (received)
+ghresearcher monitor -f /data2/GhResearcher/tests/target_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) -r --expand-commits
+
+# yesterday to today activities of my followed organizations
+ghresearcher monitor -f /data2/GhResearcher/tests/target_org.txt --since $(date -d "1 day ago" +%Y-%m-%d) --org --expand-commits
+```
+
 **Usage:** `ghresearcher monitor [OPTIONS] [TARGET]`
 
 #### Monitor a Single User
 Track the public actions of a specific developer (e.g., pushes, stars, forks).
 ```bash
+# Monitor my activities (single user)
 ghresearcher monitor MaybeBio -l 5
+
+# Monitor multiple users (file input)
+ghresearcher monitor -f users_to_track.txt 
+# ghresearcher monitor -f ./tests/target_user.txt --since 2026-05-11 --expand-commits
 ```
 
 what you get is:
@@ -98,11 +117,47 @@ Fetching events for target(s): MaybeBio...
 2026-05-12 18:59:39 | 🆕 MaybeBio created branch 'main' at MaybeBio/GhResearcher
 ```
 
+if multiple, you get is
+```python
+Fetching events for target(s): alexholehouse, Junjie-Zhu, HFChenLab, sirius777coder, Zuricho, Immortals-33, lujiarui, ChenDdon, AspirinCode, bjing2016, tyang816, prokia, Gonglab-THU...
+
+2026-05-13 08:50:23 | ⭐️ prokia starred yliust/Tactile
+2026-05-13 03:04:54 | ⭐️ Zuricho starred jsdoc/jsdoc
+2026-05-12 23:14:59 | 🚀 AspirinCode pushed to AspirinCode/awesome-AI4MolConformation-MD
+    - [cc88d0d] (expanded) Update README.md
+2026-05-12 22:54:36 | 🚀 AspirinCode pushed to AspirinCode/papers-for-molecular-design-using-DL
+    - [c062c62] (expanded) Update README.md
+2026-05-12 20:29:29 | ⭐️ sirius777coder starred aqlaboratory/genie3
+2026-05-12 20:01:38 | ⭐️ Immortals-33 starred obra/superpowers
+2026-05-12 19:54:51 | ⭐️ Zuricho starred nicobailon/visual-explainer
+2026-05-12 19:48:18 | ⭐️ Zuricho starred RomeroLab/BioDesignBench
+2026-05-12 19:17:07 | 🔹 bjing2016 performed MemberEvent on MihirBafna/boltzgen
+2026-05-12 19:08:38 | 🚀 AspirinCode pushed to AspirinCode/awesome-AI4MolConformation-MD
+    - [042c4c9] (expanded) Update README.md
+2026-05-12 18:54:19 | 🚀 AspirinCode pushed to AspirinCode/awesome-AI4MolConformation-MD
+    - [6a0bac1] (expanded) Update README.md
+2026-05-12 18:50:17 | 🚀 AspirinCode pushed to AspirinCode/awesome-AI4MolConformation-MD
+    - [348fb9f] (expanded) Update README.md
+2026-05-12 18:24:54 | ⭐️ AspirinCode starred HealthRex/PhysicianBench
+2026-05-12 16:23:29 | ⭐️ Zuricho starred yliust/Tactile
+2026-05-12 16:19:36 | ⭐️ Zuricho starred smiles724/Proteo-R1
+2026-05-12 09:56:57 | ⭐️ AspirinCode starred yaochenr/LLM-TPD-Extraction
+2026-05-12 00:07:44 | 💬 tyang816 created issue 'Trouble recreating zero shot results on protein gym' in ai4protein/VenusREM
+2026-05-11 23:30:54 | ⭐️ AspirinCode starred Yuan1z0825/nature-skills
+2026-05-11 18:08:37 | 💬 Junjie-Zhu created issue 'Availability of pretrained weights' in Vincentx15/atomsurf
+2026-05-11 17:51:13 | ⭐️ Immortals-33 starred openai/plugins
+```
+
 
 #### Monitor an Organization (`--org`)
 Track the collective public events of an entire organization or lab. This is highly useful for following research groups' release updates or code pushes.
 ```bash
+# Monitor GENTEL-lab's activities (single organization)
 ghresearcher monitor GENTEL-lab --org
+
+# Monitor multiple organizations (file input)
+ghresearcher monitor -f labs_to_track.txt --org
+# ghresearcher monitor -f ./tests/target_org.txt --since 2026-05-11 
 ```
 what you get is
 ```python 
@@ -140,10 +195,113 @@ Fetching events for target(s): GENTEL-lab...
 2026-05-02 18:09:32 | ⭐️ 81davejohnson80 starred GENTEL-lab/EVA
 ```
 
+if multiple, you get is
+```python
+Fetching events for target(s): kiharalab, honig-lab, ai4protein, GENTEL-lab, steineggerlab, biomed-AI, BioComputingUP, ProteinDesignLab, sparks-lab-org, baker-laboratory, Graylab, isblab, THGLab, idptools, holehouse-lab, 
+Pappulab, KULL-Centre...
+
+2026-05-13 09:37:56 | 💬 jmcavanagh created issue 'Getting invalid SMILES string while trying tutorial in T4 Colab' in THGLab/SmileyLlama
+2026-05-13 06:29:17 | 🚀 jmcavanagh pushed to THGLab/SmileyLlama (no commit info)
+2026-05-13 06:29:16 | 🔀 GbAlteri merged PR in THGLab/SmileyLlama
+2026-05-13 06:10:58 | 🏷️  AntiMatter568 published release v1.0.1 in kiharalab/DAQplugin
+2026-05-13 06:10:42 | 🚀 AntiMatter568 pushed to kiharalab/DAQplugin (no commit info)
+2026-05-13 04:42:31 | 💬 MichaelChungyoun created issue 'Intuition of calculating the ProGen2 likelihood of the reverse sequence' in Graylab/FLAb
+2026-05-13 04:42:31 | 🐛 MichaelChungyoun closed issue in Graylab/FLAb: 'Intuition of calculating the ProGen2 likelihood of the reverse sequence'
+2026-05-13 04:36:09 | 🐛 MichaelChungyoun closed issue in Graylab/FLAb: 'missing data in immunogenicity data folder'
+2026-05-13 04:36:08 | 💬 MichaelChungyoun created issue 'missing data in immunogenicity data folder' in Graylab/FLAb
+2026-05-13 04:23:23 | 🔹 AntiMatter568 performed DeleteEvent on kiharalab/DAQplugin
+2026-05-13 04:21:16 | 🚀 AntiMatter568 pushed to kiharalab/DAQplugin (no commit info)
+2026-05-13 04:16:46 | 🏷️  AntiMatter568 published release v1.0.0 in kiharalab/DAQplugin
+2026-05-13 04:16:19 | 🚀 AntiMatter568 pushed to kiharalab/DAQplugin (no commit info)
+2026-05-13 03:55:16 | 🍴 BankBro forked biomed-AI/DiffDec
+2026-05-13 03:46:31 | 🐛 MichaelChungyoun closed issue in Graylab/FLAb: ''tm' folder is missing'
+2026-05-13 03:46:30 | 💬 MichaelChungyoun created issue ''tm' folder is missing' in Graylab/FLAb
+2026-05-13 03:44:29 | 🔹 MichaelChungyoun performed DeleteEvent on Graylab/FLAb
+2026-05-13 03:44:08 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:43:59 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:33:53 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:33:44 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:30:45 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:30:06 | 🆕 MichaelChungyoun created branch 'flab2-dev' at Graylab/FLAb
+2026-05-13 03:27:22 | 🔹 MichaelChungyoun performed DeleteEvent on Graylab/FLAb
+2026-05-13 03:26:54 | 🔹 MichaelChungyoun performed DeleteEvent on Graylab/FLAb
+2026-05-13 03:24:26 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:22:54 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:20:52 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:20:36 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 03:06:54 | 🐛 MichaelChungyoun closed issue in Graylab/FLAb: 'When is the article updated'
+2026-05-13 03:06:51 | 💬 MichaelChungyoun created issue 'When is the article updated' in Graylab/FLAb
+2026-05-13 02:59:37 | 🐛 MichaelChungyoun closed issue in Graylab/FLAb: 'Rosace et al. binding data are likely in M'
+2026-05-13 02:59:35 | 💬 MichaelChungyoun created issue 'Rosace et al. binding data are likely in M' in Graylab/FLAb
+2026-05-13 02:59:11 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 02:53:53 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 02:51:54 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 02:38:15 | 🐛 MichaelChungyoun closed issue in Graylab/FLAb: 'HCDR3s swapped with trastuzumab HCDR1 in Shanehsazzadeh zero-shot dataset'
+2026-05-13 02:38:13 | 💬 MichaelChungyoun created issue 'HCDR3s swapped with trastuzumab HCDR1 in Shanehsazzadeh zero-shot dataset' in Graylab/FLAb
+2026-05-13 02:30:27 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 02:25:12 | 🚀 MichaelChungyoun pushed to Graylab/FLAb (no commit info)
+2026-05-13 01:28:10 | ⭐️ alanfwilliams starred baker-laboratory/RoseTTAFold-All-Atom
+2026-05-13 01:05:12 | 🚀 zlr-zmm pushed to ai4protein/VenusFactory2 (no commit info)
+2026-05-13 01:02:35 | 🚀 zlr-zmm pushed to ai4protein/VenusFactory2 (no commit info)
+2026-05-13 01:02:33 | 🔀 Patiskey merged PR in ai4protein/VenusFactory2
+2026-05-13 00:40:24 | ⭐️ DSamuelHodge starred ProteinDesignLab/dEVA
+2026-05-12 22:46:44 | 🐛 sudhir2016 opened issue in THGLab/SmileyLlama: 'Getting invalid SMILES string while trying tutorial in T4 Colab'
+2026-05-12 22:26:19 | ⭐️ qianyhpku starred biomed-AI/DRlinker
+2026-05-12 20:27:13 | 🔀 sooyoung-cha opened PR in steineggerlab/foldseek
+2026-05-12 20:25:13 | 🚀 sooyoung-cha pushed to steineggerlab/foldseek (no commit info)
+2026-05-12 20:14:03 | 🚀 sooyoung-cha pushed to steineggerlab/foldseek (no commit info)
+2026-05-12 20:14:01 | 🔀 sooyoung-cha merged PR in steineggerlab/foldseek
+2026-05-12 20:13:46 | 🔀 sooyoung-cha opened PR in steineggerlab/foldseek
+2026-05-12 18:54:09 | ⭐️ zmzhang starred THGLab/SmileyLlama
+2026-05-12 17:03:15 | ⭐️ zhimingzhang275 starred ai4protein/VenusX
+2026-05-12 15:16:35 | ⭐️ Abbbbyyyy starred ai4protein/Pro-Prime
+2026-05-12 14:40:01 | ⭐️ DrDiscoDao starred THGLab/HiQBind
+2026-05-12 12:58:09 | ⭐️ insilicoscientist starred baker-laboratory/RoseTTAFold-All-Atom
+2026-05-12 11:39:18 | ⭐️ hajuchan starred steineggerlab/foldseek
+2026-05-12 06:05:49 | ⭐️ lorcai starred steineggerlab/StrucTTY
+2026-05-12 05:47:44 | 🚀 gterashi pushed to kiharalab/DAQplugin (no commit info)
+2026-05-12 05:47:19 | 🚀 AntiMatter568 pushed to kiharalab/DAQplugin (no commit info)
+2026-05-12 05:37:45 | 🚀 gterashi pushed to kiharalab/DAQplugin (no commit info)
+2026-05-12 03:53:09 | 💬 dmoypal created issue 'Missing Alignment Visualizations in html Output' in steineggerlab/foldseek
+2026-05-12 02:38:03 | 🚀 ryanemenecker pushed to idptools/goose (no commit info)
+2026-05-12 02:35:14 | 🔀 Patiskey opened PR in ai4protein/VenusFactory2
+2026-05-12 02:33:55 | 🚀 ryanemenecker pushed to idptools/goose (no commit info)
+2026-05-12 02:31:48 | 🚀 ryanemenecker pushed to idptools/goose (no commit info)
+2026-05-12 02:28:56 | 🚀 ryanemenecker pushed to idptools/goose (no commit info)
+2026-05-12 02:27:42 | 🏷️  ryanemenecker published release v0.2.5.1 in idptools/goose
+2026-05-12 02:14:56 | 🚀 ryanemenecker pushed to idptools/goose (no commit info)
+2026-05-12 01:33:27 | ⭐️ justiniao starred GENTEL-lab/EVA
+2026-05-12 00:56:26 | ⭐️ rujinlong starred steineggerlab/StrucTTY
+2026-05-12 00:27:15 | ⭐️ damrane starred ProteinDesignLab/dEVA
+2026-05-12 00:07:44 | 💬 tyang816 created issue 'Trouble recreating zero shot results on protein gym' in ai4protein/VenusREM
+2026-05-11 23:36:06 | 🚀 adelbke pushed to BioComputingUP/nest-mongo-acl (no commit info)
+2026-05-11 23:35:26 | 🚀 adelbke pushed to BioComputingUP/nest-mongo-acl (no commit info)
+2026-05-11 23:01:28 | 🚀 LunaJang pushed to steineggerlab/StrucTTY (no commit info)
+2026-05-11 18:42:35 | 🚀 LunaJang pushed to steineggerlab/StrucTTY (no commit info)
+2026-05-11 18:21:16 | ⭐️ Hidroxiapatito starred steineggerlab/colabfold-protocol
+2026-05-11 13:41:39 | 🔹 gamcil performed DeleteEvent on steineggerlab/foldmason
+2026-05-11 13:41:35 | 🚀 gamcil pushed to steineggerlab/foldmason (no commit info)
+2026-05-11 13:41:34 | 🔀 gamcil merged PR in steineggerlab/foldmason
+2026-05-11 13:40:56 | 🔀 gamcil opened PR in steineggerlab/foldmason
+2026-05-11 13:05:16 | 🚀 gamcil pushed to steineggerlab/foldmason (no commit info)
+2026-05-11 10:59:50 | ⭐️ linjing-lab starred GENTEL-lab/VCWorld
+2026-05-11 10:33:03 | ⭐️ samuelmcurtis starred baker-laboratory/RoseTTAFold-All-Atom
+2026-05-11 10:19:35 | ⭐️ chengwilliamlin starred idptools/starling
+2026-05-11 09:06:44 | ⭐️ AndyCycle starred steineggerlab/foldseek
+2026-05-11 09:02:37 | 🚀 gterashi pushed to kiharalab/DAQplugin (no commit info)
+2026-05-11 02:55:34 | ⭐️ wyqmath starred idptools/starling
+
+```
+
+
 #### Monitor a specific Repository (`--repo`)
 Focus cleanly on the event stream of a single repository (e.g., releases, issues, PRs, stars).
 ```bash
+# Monitor a single repository (isblab/disobind)
 ghresearcher monitor isblab/disobind --repo -l 20
+
+# Monitor multiple repositories (file input)
+ghresearcher monitor -f repos_to_track.txt --repo
 ```
 
 what you get is
@@ -220,6 +378,70 @@ ghresearcher monitor -f experts.txt --since 2026-05-01 --until 2026-05-12
 By default, long pushes are truncated. Use `--expand-commits` to fetch detailed commit messages via additional API calls.
 ```bash
 ghresearcher monitor teorth --expand-commits
+```
+
+what you get is
+```python
+Fetching events for target(s): teorth...
+
+2026-05-13 08:57:32 | 🚀 teorth pushed to teorth/erdos-guy-selfridge
+    - [617f9ad] (expanded) Merge pull request #101 from Milian0402/maxiboi/readme-roadmap
+2026-05-13 08:57:21 | 🔹 teorth performed PullRequestReviewEvent on teorth/erdos-guy-selfridge
+2026-05-13 08:52:04 | 🚀 teorth pushed to teorth/erdos-guy-selfridge
+    - [0da591c] (expanded) Merge pull request #102 from Milian0402/maxiboi/c1-constant-docs
+2026-05-13 08:51:57 | 🔹 teorth performed PullRequestReviewEvent on teorth/erdos-guy-selfridge
+2026-05-13 06:17:43 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [bcfd513] (expanded) integral form of additivity
+2026-05-13 05:37:12 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [fc850d0] (expanded) trim docstring
+2026-05-13 05:35:07 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [a75fbf5] (expanded) Merge branch 'stieltjes' of https://github.com/leanprover-community/mathlib-at-ICERM26 into stieltjes
+2026-05-13 02:10:07 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [92e6786] (expanded) redefine Stieltjes integral to handle backwards integral
+2026-05-12 22:30:35 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [ad35844] (expanded) some map API
+2026-05-12 20:20:08 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [2bce97a] (expanded) some simple lemmas about intervals
+2026-05-12 16:57:47 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [c025070] (expanded) integration of constants
+2026-05-12 15:38:00 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [3ffc66b] (expanded) remove warning
+2026-05-12 15:35:29 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [e297d8a] (expanded) add connections to standard integrals
+2026-05-12 15:28:46 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [92c1ea3] (expanded) notation for integral
+2026-05-12 15:22:09 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [e7fbac7] (expanded) even more linearity API
+2026-05-12 15:18:39 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [09e1ecb] (expanded) more linearity API
+2026-05-12 15:06:36 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [bcfd5f1] (expanded) sectioning
+2026-05-12 15:03:06 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [98ae4aa] (expanded) Stieltjes integral linearity API
+2026-05-12 14:44:10 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [bedff9f] (expanded) automated style fixes
+2026-05-12 14:38:46 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [0f90350] (expanded) bundle ofDiff as a hom
+2026-05-12 13:59:52 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [18d419b] (expanded) BoxAdditiveMap API
+2026-05-12 13:29:05 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [2a43bd9] (expanded) fix lean
+2026-05-12 13:28:23 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [096a002] (expanded) fix lean
+2026-05-12 13:27:31 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [3425dd1] (expanded) add other predicates for Stieltjes integrability
+2026-05-12 13:16:48 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [6d9643a] (expanded) notational golf
+2026-05-12 13:10:50 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [5198afa] (expanded) change interval to Ioc
+2026-05-12 13:08:16 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [354ba9b] (expanded) generalize integration against summatory function
+2026-05-12 13:00:43 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [44a86ee] (expanded) golf namespaces
+2026-05-12 12:54:26 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [a692262] (expanded) add docstring
+2026-05-12 12:49:38 | 🚀 teorth pushed to leanprover-community/mathlib-at-ICERM26
+    - [cfc0361] (expanded) change from Unit to Fin 1
 ```
 
 ---

@@ -37,9 +37,6 @@ isblab
 # https://github.com/THGLab，idr、蛋白质物理
 THGLab
 
-# https://github.com/HFChenLab，idr、蛋白质互作
-HFChenLab
-
 # https://github.com/idptools，idr核心，工作
 idptools
 
