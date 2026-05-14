@@ -1,3 +1,7 @@
+#######################################
+# For academic (后续可以拆分多个list独立)
+#######################################
+
 # https://github.com/alexholehouse，idr核心组
 alexholehouse
 
@@ -36,3 +40,11 @@ prokia
 
 # https://github.com/Gonglab-THU，蛋白质结构，MD
 Gonglab-THU
+
+
+#######################################
+# For non-academic
+#######################################
+
+# https://github.com/jackwener，社交工具Agent化、opencli
+jackwener   
