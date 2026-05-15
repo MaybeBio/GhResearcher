@@ -1,0 +1,16 @@
+{
+  "sources": [
+    {
+      "name": "deepwiki",
+      "kind": "template",
+      "url": "https://deepwiki.com/{owner}/{repo}",
+      "description": "DeepWiki repository reader"
+    },
+    {
+      "name": "gitnexus",
+      "kind": "fixed",
+      "url": "https://github.com/abhigyanpatwari/GitNexus",
+      "description": "GitNexus repository"
+    }
+  ]
+}

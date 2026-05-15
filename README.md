@@ -2,9 +2,32 @@
 
 [En](README.md) | [中文](README_zh.md)
 
-A powerful GitHub Code & Repo Analysis CLI for Researchers, designed to track activities, scrape repository contexts, and search intelligently—**without leaving YOUR terminal**.
+A powerful GitHub Code & Repo Analysis CLI for Researchers, designed to track activities, scrape and parse repository contexts, and search intelligently—**without leaving YOUR terminal**.
 
 ---
+ 
+## Table of Contents
+
+- [GhResearcher 🔬](#ghresearcher-)
+  - [Table of Contents](#table-of-contents)
+  - [📖 Introduction](#-introduction)
+  - [🧠 Design Philosophy](#-design-philosophy)
+  - [✨ Features](#-features)
+  - [⚙️ Installation](#️-installation)
+    - [Prerequisites](#prerequisites)
+    - [Install GhResearcher](#install-ghresearcher)
+  - [🚀 Usage Guide](#-usage-guide)
+    - [1. Monitoring Activities (`monitor`)](#1-monitoring-activities-monitor)
+      - [Monitor a Single User](#monitor-a-single-user)
+      - [Monitor an Organization (`--org`)](#monitor-an-organization---org)
+      - [Monitor a specific Repository (`--repo`)](#monitor-a-specific-repository---repo)
+      - [Monitor a User's Feed (`--received`)](#monitor-a-users-feed---received)
+      - [Batch Monitoring](#batch-monitoring)
+      - [Expanded Commits](#expanded-commits)
+    - [2. Parsing Repository Context (`parse`)](#2-parsing-repository-context-parse)
+    - [3. Searching GitHub (`search`)](#3-searching-github-search)
+  - [⚠️ Limits \& Caveats](#️-limits--caveats)
+
 
 ## 📖 Introduction
 
@@ -17,7 +40,7 @@ Whether you want to track a specific expert's "feed", monitor the activities of 
 - **Curing "Free-Range" Research:** Many researchers and grad students (especially in computational fields) feel isolated without daily guidance. This tool acts as your academic "social feed" for code. By tracking what experts and labs are actively working on, it keeps you involved, gives you clear targets, and ensures you stay motivated and closely aligned with mainstream developments.
 - **Terminal First:** Keep you in the flow. No context switching to a web browser.
 - **Data Density:** Present maximum information with minimal clutter. Long commit hashes are truncated; pagination is handled automatically.
-- **LLM-Friendly:** Commands like `scrape` are explicitly designed to generate `.md` files that can be directly fed into Language Models for code analysis and project understanding.
+- **LLM-Friendly:** Commands like `parse` are explicitly designed to generate `.md` files that can be directly fed into Language Models for code analysis and project understanding.
 - **Privacy & Security:** Relies entirely on your local `gh` authentication. No third-party servers, no telemetry.
 
 ---
@@ -25,13 +48,20 @@ Whether you want to track a specific expert's "feed", monitor the activities of 
 ## ✨ Features
 
 - **Dynamic Tracking (`monitor`)**: 
-  - Track events from Users, Organizations (`--org`), or specific Repositories (`--repo`).
-  - Read a user's GitHub Feed (`--received`) to see what experts are paying attention to.
-  - Seamless pagination handling to bypass standard API constraints.
-- **Repository Scraper (`scrape`)**:
-  - Automatically clone (shallow) and generate a Markdown file containing the project's README, description, and an ASCII directory tree.
+    - Track events from Users, Organizations (`--org`), or specific Repositories (`--repo`).
+    - Read a user's GitHub Feed (`--received`) to see what experts are paying attention to.
+    - Seamless pagination handling to bypass standard API constraints.
+- **Repository Parser (`parse`)**:
+    - Default mode exports README + repository tree into a Markdown file(similar to tree command).
+    - `--view` opens a pager instead of writing files.
+    - `--view-mode readme` uses `gh repo view` directly for README-only paging.
+    - `--view-mode tree` shows only the repository tree.
+    - `--source` lists saved `Agent Parser(like DeepWiki OR some GitHub LLM-based parsers)` source URLs for the repository.
+    - `--sources-file <file>` loads extra or overridden saved `Agent Parser` source URLs from JSON.
+    - Single-file targets like `owner/repo/path/to/file` fetch file contents directly without cloning.
+    - Supports `direct download of file content` in addition to paginated viewing.
 - **Multi-domain Search (`search`)**:
-  - Quickly search across repos, code, issues, and pull requests.
+    - Quickly search across repos, code, issues, and pull requests.
 
 ---
 
@@ -86,14 +116,34 @@ Three important commands daily for me:
 # yesterday to today activities of my followed experts
 ghresearcher monitor -f /data2/GhResearcher/tests/target_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits
 
-# yesterday to today activities of my followed experts (received)
-ghresearcher monitor -f /data2/GhResearcher/tests/target_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) -r --expand-commits
-
-# yesterday to today activities of my followed organizations
-ghresearcher monitor -f /data2/GhResearcher/tests/target_org.txt --since $(date -d "1 day ago" +%Y-%m-%d) --org --expand-commits
 ```
 
 **Usage:** `ghresearcher monitor [OPTIONS] [TARGET]`
+
+```python
+❯ ghresearcher monitor --help
+                                                                                                                                                                  
+ Usage: ghresearcher monitor [OPTIONS] [TARGET_NAME]                                                                                                              
+                                                                                                                                                                  
+ Track and view the recent events of specific GitHub user(s), organization(s), or repos. Supports single target directly or batch targets via file. Events from   
+ multiple targets are combined into a global chronological timeline.                                                                                              
+                                                                                                                                                                  
+╭─ Arguments ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│   target_name      [TARGET_NAME]  The GitHub user, org, or repo to monitor                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --file            -f      TEXT     File containing GitHub targets (one per line)                                                                               │
+│ --received        -r               Fetch feed instead of user's own events                                                                                     │
+│ --org             -O               Treat target as an Organization instead of a User                                                                           │
+│ --repo            -R               Treat target as a Repository (owner/repo format)                                                                            │
+│ --limit           -l      INTEGER  Number of events to fetch per target [default: 30]                                                                          │
+│ --since                   TEXT     Filter events on or after this date (YYYY-MM-DD)                                                                            │
+│ --until                   TEXT     Filter events on or before this date (YYYY-MM-DD)                                                                           │
+│ --expand-commits                   Make additional API calls to get commit details for PushEvents if missing                                                   │
+│ --help                             Show this message and exit.                                                                                                 │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
 
 #### Monitor a Single User
 Track the public actions of a specific developer (e.g., pushes, stars, forks).
@@ -446,16 +496,78 @@ Fetching events for target(s): teorth...
 
 ---
 
-### 2. Scraping Repository Context (`scrape`)
+### 2. Parsing Repository Context (`parse`)
 
-Dumps a repository's metadata, README, and directory tree into a single `Context.md` file, perfect for sharing context with ChatGPT or Claude.
+Parses a repository, file, or saved source catalog into terminal-friendly text. The default repository path uses GitHub's Trees API first, so it does not need to clone the repository unless the API response is truncated or unavailable.
 
-**Usage:** `ghresearcher scrape [REPO]`
+**Usage:** `ghresearcher parse [TARGET] [--view] [--view-mode readme|tree|both] [--source] [--sources-file FILE]`
+
+```python
+❯ ghresearcher parse --help
+                                                                                                                                                                  
+ Usage: ghresearcher parse [OPTIONS] TARGET                                                                                                                       
+                                                                                                                                                                  
+ Parse a repository, file, or source URL into Markdown/text.                                                                                                      
+                                                                                                                                                                  
+╭─ Arguments ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    target      TEXT  The GitHub repo (owner/repo) or file (owner/repo/path/to/file) [required]                                                               │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --output        -o      TEXT  Output file path                                                                                                                 │
+│ --view                        View in a pager instead of writing to disk                                                                                       │
+│ --view-mode             TEXT  View mode for repositories: both, readme, or tree [default: both]                                                                │
+│ --source                      List saved source URLs for the repository                                                                                        │
+│ --sources-file          TEXT  JSON file containing extra or overridden source URLs                                                                             │
+│ --help                        Show this message and exit.                                                                                                      │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
+
+---
+
+> ⚠️ Parse logic is global, i.e., not adding `--view` option will download the repository content to a file. Adding `--view` option will only view in a pager, without writing to disk.
 
 ```bash
-ghresearcher scrape isblab/disobind -o Disobind_Context.md
+# Write README + tree to a file
+ghresearcher parse isblab/disobind -o Disobind_Context.md
+
+# View README + tree in a pager
+ghresearcher parse isblab/disobind --view
+
+# README-only pager using the native `gh repo view` experience
+ghresearcher parse isblab/disobind --view --view-mode readme
+
+# Tree-only pager
+ghresearcher parse isblab/disobind --view --view-mode tree
+
+# Single file, e.g., README.md, you can directly append the file path after owner/repo
+ghresearcher parse isblab/disobind/README.md --view
+
+# Saved source catalog for the repository (we provide some default urls)
+ghresearcher parse isblab/disobind --source --view
+
+# Load extra sources from a JSON file (except default urls, you can also add your own urls in the JSON file, we will merge them together)
+ghresearcher parse isblab/disobind --source --sources-file ./sources.json --view
 ```
-*Note: This performs a shallow clone (`git clone --depth 1`) in a temporary directory to generate the tree efficiently.*
+
+Current default sources:
+```json
+[
+    {"name": "deepwiki", "kind": "template", "url": "https://deepwiki.com/{owner}/{repo}"},
+    {"name": "zreadai", "kind": "template", "url": "https://zread.ai/{owner}/{repo}"},
+    {"name": "readmex", "kind": "template", "url": "https://readmex.com/{owner}/{repo}"},
+    {"name": "gitdiagram", "kind": "template", "url": "https://gitdiagram.com/{owner}/{repo}"},
+]
+```
+
+
+Implementation notes:
+- Repository trees are fetched from the GitHub Trees API first.
+- If the Trees API is truncated or fails for a very large repository, GhResearcher falls back to a temporary shallow clone to generate the tree.
+- `--view --view-mode readme` uses `gh repo view` directly, so it keeps GitHub CLI's native pager behavior.
+- `sources.json` can define both template sources and fixed URLs.
+- You can point `--sources-file` at any JSON file containing extra or overridden saved source URLs.
+- A ready-to-edit example lives at `sources.example.json` in the repository root.
 
 ---
 
@@ -475,5 +587,5 @@ ghresearcher search repos "Deep Learning" -L Python -l 10
 ## ⚠️ Limits & Caveats
 
 - **GitHub API Limits:** The `monitor` timeline is restricted to a maximum of 300 recent events or events within the past 90 days due to GitHub API constraints.
-- **Scraper Size:** The `scrape` command currently builds the tree in memory and clones the repository. Extremely massive repositories (10,000+ files) may take longer or consume significant memory.
+- **Parser Size:** The `parse` command can still be expensive for extremely large repositories because tree rendering and pager output may be large. When the Trees API is truncated, the tool falls back to a temporary shallow clone.
 - **Rate Limiting:** Heavy use of `--expand-commits` or batch mapping large lists may quickly consume your GitHub API rate limit. Use with care.

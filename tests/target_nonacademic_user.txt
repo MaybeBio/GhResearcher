@@ -1,0 +1,6 @@
+#######################################
+# For non-academic
+#######################################
+
+# https://github.com/jackwener，社交工具Agent化、opencli
+jackwener

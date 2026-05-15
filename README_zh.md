@@ -1,8 +1,24 @@
 # GhResearcher 🔬
 
-专为科研人员、开发者与技术爱好者打造的 GitHub 代码与仓库分析终端工具（CLI）。让你**无需离开终端（Terminal）**，即可追踪学术大牛动态、抓取仓库上下文文件、并进行高级搜索。
+专为科研人员、开发者与技术爱好者打造的 GitHub 代码与仓库分析终端工具（CLI）。让你**无需离开终端（Terminal）**，即可追踪学术大牛动态、抓取并解析仓库上下文文件、并进行高级搜索。
 
 ---
+
+## 目录
+
+- [简介 / Introduction](#简介--introduction)
+- [设计哲学 / Design Philosophy](#设计哲学--design-philosophy)
+- [核心特性 / Features](#核心特性--features)
+- [安装说明 / Installation](#安装说明--installation)
+    - [环境依赖](#环境依赖)
+    - [安装 GhResearcher](#安装-ghresearcher)
+- [使用指南 / Usage Guide](#使用指南--usage-guide)
+    - [动态监控 (monitor)](#动态监控-monitor)
+        - [监控单个用户](#监控单个用户)
+        - [监控组织 (--org)](#监控组织-org)
+        - [窥探大牛的视野 / 信息流 (--received)](#窥探大牛的视野--信息流-received)
+        - [批量订阅监控](#批量订阅监控)
+
 
 ## 📖 简介 / Introduction
 
@@ -26,8 +42,15 @@
   - 支持追踪指定 用户 (User)、组织 (`--org`) 或特定仓库 (`--repo`) 的动态事件。
   - 支持“信息流”追踪 (`--received`)：看看大牛关注的人和仓库最近在干什么。
   - 自动处理分页，突破单次 API 拉取上限，并能对 PR/Issue/Release 生成富文本标题。
-- **仓库上下文抓取 (`scrape`)**:
-  - 自动浅克隆仓库并生成一个包含项目 README、描述及全景 ASCII 目录树的 Markdown 文件。
+- **仓库上下文解析 (`parse`):**
+    - 默认将仓库解析为一个包含项目 README、描述及全景 ASCII 目录树的 Markdown 文件(类似于tree命令)。
+    - `--view` 模式下会在终端分页查看；仓库默认显示 README + 目录树。
+    - `--view-mode readme` 会直接使用 `gh repo view` 的原生分页体验只看 README。
+    - `--view-mode tree` 只查看目录树。
+    - `--source` 会列出这个仓库的`Agent解析引擎(比如说DeepWiki或者一些基于LLM的GitHub智能解析器)`的source URL。
+    - `--sources-file <file>` 用于加载额外或覆盖的`Agent解析引擎` URL 配置 JSON。
+    - 支持单文件目标 `owner/repo/path/to/file`，默认直接输出文件内容，`--view` 可分页查看。
+    - 除了以上解析翻页查阅外，还支持`直接下载抓取对应文件内容`。
 - **多领域搜索 (`search`)**:
   - 支持在终端内直接检索仓库、代码片段、Issue 以及 Pull Request。
 
@@ -77,15 +100,39 @@ ghresearcher --help
 
 **语法:** `ghresearcher monitor [选项] [目标]`
 
+```python
+❯ ghresearcher monitor --help
+                                                                                                                                                                  
+ Usage: ghresearcher monitor [OPTIONS] [TARGET_NAME]                                                                                                              
+                                                                                                                                                                  
+ Track and view the recent events of specific GitHub user(s), organization(s), or repos. Supports single target directly or batch targets via file. Events from   
+ multiple targets are combined into a global chronological timeline.                                                                                              
+                                                                                                                                                                  
+╭─ Arguments ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│   target_name      [TARGET_NAME]  The GitHub user, org, or repo to monitor                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --file            -f      TEXT     File containing GitHub targets (one per line)                                                                               │
+│ --received        -r               Fetch feed instead of user's own events                                                                                     │
+│ --org             -O               Treat target as an Organization instead of a User                                                                           │
+│ --repo            -R               Treat target as a Repository (owner/repo format)                                                                            │
+│ --limit           -l      INTEGER  Number of events to fetch per target [default: 30]                                                                          │
+│ --since                   TEXT     Filter events on or after this date (YYYY-MM-DD)                                                                            │
+│ --until                   TEXT     Filter events on or before this date (YYYY-MM-DD)                                                                           │
+│ --expand-commits                   Make additional API calls to get commit details for PushEvents if missing                                                   │
+│ --help                             Show this message and exit.                                                                                                 │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
 3个对我来说每天都要运行的重要命令(每日更新)
 ```python
 # 你可以把输入文件改成你的目标文件
 
 # 昨天到今天关注用户的动态事件
-ghresearcher monitor -f /data2/GhResearcher/tests/target_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits
+ghresearcher monitor -f /data2/GhResearcher/tests/target_academic_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits
 
 # 昨天到今天关注用户的动态事件（包含接收事件，这个输出一般会很长）
-ghresearcher monitor -f /data2/GhResearcher/tests/target_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) -r --expand-commits
+ghresearcher monitor -f /data2/GhResearcher/tests/target_academic_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) -r --expand-commits
 
 # 昨天到今天关注组织的动态事件
 ghresearcher monitor -f /data2/GhResearcher/tests/target_org.txt --since $(date -d "1 day ago" +%Y-%m-%d) --org --expand-commits
@@ -443,34 +490,73 @@ Fetching events for target(s): teorth...
 
 ---
 
-### 2. 抓取仓库上下文 (`scrape`)
+### 2. 解析仓库上下文 (`parse`)
 
-将目标仓库的基础元数据、README 以及完整目录树打包成单个 `Context.md` 文件。遇到大型代码库无从下手时，把这个文件直接扔给 LLM 帮你梳理架构。
+将目标仓库的基础元数据、README 以及完整目录树打包成单个上下文文件。这个命令的核心是“解析”，而不是“下载整个仓库”。目录树通过 GitHub API 生成，因此默认不需要 `git clone`, 只有在 API 访问失败或者仓库过大时才会回退到临时浅克隆的方式来生成树。
 
-**语法:** `ghresearcher scrape [REPO]`
+**语法:** `ghresearcher parse [TARGET] [--view] [--view-mode readme|tree|both] [--source] [--sources-file FILE]`
 
-```bash
-ghresearcher scrape isblab/disobind -o Disobind_Context.md
+```python
+❯ ghresearcher parse --help
+                                                                                                                                                                  
+ Usage: ghresearcher parse [OPTIONS] TARGET                                                                                                                       
+                                                                                                                                                                  
+ Parse a repository, file, or source URL into Markdown/text.                                                                                                      
+                                                                                                                                                                  
+╭─ Arguments ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    target      TEXT  The GitHub repo (owner/repo) or file (owner/repo/path/to/file) [required]                                                               │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --output        -o      TEXT  Output file path                                                                                                                 │
+│ --view                        View in a pager instead of writing to disk                                                                                       │
+│ --view-mode             TEXT  View mode for repositories: both, readme, or tree [default: both]                                                                │
+│ --source                      List saved source URLs for the repository                                                                                        │
+│ --sources-file          TEXT  JSON file containing extra or overridden source URLs                                                                             │
+│ --help                        Show this message and exit.                                                                                                      │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
-*注：此命令会在系统临时目录执行浅克隆 (`git clone --depth 1`) 以提高目录树生成效率，不会拉取历史冗余数据。*
 
 ---
 
-### 3. 多维度搜索 (`search`)
-
-在终端内发起高度定制化的检索。
-
-**语法:** `ghresearcher search [搜索类型] [关键词]`
+> ⚠️ 解析逻辑保持全局一致, 即 不加 `--view` 选项时, 默认下载仓库内容到文件。加 `--view` 选项时, 则只在终端分页查看，而不进行文件写入操作。
 
 ```bash
-# 搜索和 "Deep Learning" 相关的 Python 仓库，最多返回 10 条
-ghresearcher search repos "Deep Learning" -L Python -l 10
+# 默认：输出 README + 目录树到文件
+ghresearcher parse isblab/disobind -o Disobind_Context.md
+
+# 只在终端分页查看 README + 目录树，不写文件，用我们自己的分页器
+ghresearcher parse isblab/disobind --view
+
+# 只分页查看 README，直接使用 `gh repo view` 的效果
+ghresearcher parse isblab/disobind --view --view-mode readme
+
+# 只分页查看目录树
+ghresearcher parse isblab/disobind --view --view-mode tree
+
+# 查看单文件内容, 例如 README.md, 直接在owner/repo后面拼接文件路径
+ghresearcher parse isblab/disobind/README.md --view
+
+# 跳转到默认的智能阅读页(这里我们为你提供了一些url选择)
+ghresearcher parse isblab/disobind --source --view
+
+# 从 JSON 文件加载额外的收藏(除了默认的, 你也可以在 JSON 文件中添加自己的 url, 我们会合并输出它们)
+ghresearcher parse isblab/disobind --source --sources-file ./sources.json --view
 ```
 
----
+目前支持的默认 `--source`：
+```json
+{
+  "deepwiki": "https://deepwiki.com/{owner}/{repo}",
+  "zreadai": "https://zread.ai/{owner}/{repo}",
+  "readmex": "https://readmex.com/{owner}/{repo}",
+  "gitdiagram": "https://gitdiagram.com/{owner}/{repo}"
+}
+```
 
-## ⚠️ 注意事项与限制 / Limits & Caveats
-
-- **GitHub 原生 API 限制:** 无论是普通用户、组织还是仓库的 Events 接口，受 GitHub 官方限制，最多只能追溯最近 90 天内或最近的 300 条动态。
-- **克隆与解析开销 (`scrape`):** 面对拥有数万个文件（如超级巨石型仓库）的项目，在内存中构建 ASCII 目录树会占用一定的时间和资源。
-- **速率限制 (Rate Limit):** 频繁开启 `--expand-commits` 进行海量并发查询，或极高频率地调用搜索接口，可能导致你的 GitHub CLI 授权触发访问速率限制。请根据实际需求合理设定抓取极限 (`-l`) 与起止日期 (`--since` / `--until`)。
+实现说明：
+- 仓库树先走 GitHub Trees API，避免默认 clone。
+- 如果 Trees API 在超大仓库中被截断，或者 API 访问失败，会自动回退到临时浅克隆来生成树。
+- `--view --view-mode readme` 会直接使用 `gh repo view` 的原生分页体验。
+- `sources.json` 可以同时定义模板型来源和固定 URL 来源。
+- 你也可以通过 `--sources-file` 指向任意 JSON 文件，追加或覆盖收藏 source URL。
+- 仓库根目录下提供了一个可直接修改的示例文件 `sources.example.json`。

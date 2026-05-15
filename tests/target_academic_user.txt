@@ -41,10 +41,3 @@ prokia
 # https://github.com/Gonglab-THU，蛋白质结构，MD
 Gonglab-THU
 
-
-#######################################
-# For non-academic
-#######################################
-
-# https://github.com/jackwener，社交工具Agent化、opencli
-jackwener   

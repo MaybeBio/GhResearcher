@@ -1,12 +1,13 @@
 import typer
 import os
+from pathlib import Path
 from rich.console import Console
 from typing import *
 from datetime import datetime, timezone, timedelta
 
-from .gh_client import check_auth
+from .gh_client import check_auth, run_gh_command
 from .tracker import get_user_events, get_received_events, get_org_events, get_repo_events, format_event
-from .scraper import scrape_repository
+from .scraper import build_parse_text, build_parse_view, build_source_catalog_text, split_target
 from .searcher import search_github
 
 app = typer.Typer(help="GhResearcher: GitHub Code & Repo Analysis CLI")
@@ -114,20 +115,99 @@ def monitor(
     except Exception as e:
         console.print(f"[red]Failed to fetch events: {e}[/red]")
 
-@app.command()
-def scrape(
-    repo: str = typer.Argument(..., help="The repository to scrape (e.g. 'owner/repo')"),
-    output: str = typer.Option("Context.md", "--output", "-o", help="Output Markdown file")
+def _default_output_name(target: str, source_catalog: bool = False) -> str:
+    if source_catalog:
+        return "Sources.md"
+    parts = [part for part in target.strip().strip("/").split("/") if part]
+    if len(parts) > 2:
+        return Path(parts[-1]).name or "Context.md"
+    return "Context.md"
+
+
+def _run_parse(
+    target: str,
+    output: Optional[str],
+    view: bool,
+    view_mode: str,
+    source: bool,
+    sources_file: Optional[str],
+) -> None:
+    output_name = output or _default_output_name(target, source_catalog=source)
+
+    try:
+        if view:
+            if not source:
+                try:
+                    owner, repo, file_path = split_target(target)
+                    if file_path is None and view_mode.lower().strip() == "readme":
+                        run_gh_command(["repo", "view", f"{owner}/{repo}"], capture_output=False)
+                        return
+                except Exception:
+                    pass
+
+            if source:
+                text = build_source_catalog_text(target, sources_file=sources_file)
+            else:
+                text = build_parse_view(target, view_mode=view_mode, source=None, sources_file=sources_file)
+            with console.pager():
+                console.print(text)
+            return
+
+        if source:
+            text = build_source_catalog_text(target, sources_file=sources_file)
+        else:
+            text = build_parse_text(target, source=None, sources_file=sources_file)
+
+        with open(output_name, "w", encoding="utf-8") as f:
+            f.write(text)
+
+        console.print(f"[green]Successfully wrote parsed content to {output_name}[/green]")
+    except Exception as e:
+        console.print(f"[red]Parse failed: {e}[/red]")
+
+
+@app.command("parse")
+def parse(
+    target: str = typer.Argument(..., help="The GitHub repo (owner/repo) or file (owner/repo/path/to/file)"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    view: bool = typer.Option(False, "--view", help="View in a pager instead of writing to disk"),
+    view_mode: str = typer.Option("both", "--view-mode", help="View mode for repositories: both, readme, or tree"),
+    source: bool = typer.Option(False, "--source", help="List saved source URLs for the repository"),
+    sources_file: Optional[str] = typer.Option(None, "--sources-file", help="JSON file containing extra or overridden source URLs"),
 ):
     """
-    Scrape a repository's README and directory structure into a single context file.
+    Parse a repository, file, or source URL into Markdown/text.
     """
-    console.print(f"[bold blue]Scraping repository {repo}...[/bold blue]")
-    try:
-        out_file = scrape_repository(repo, output_file=output)
-        console.print(f"[green]Successfully scraped Context to {out_file}[/green]")
-    except Exception as e:
-        console.print(f"[red]Scraping failed: {e}[/red]")
+    _run_parse(
+        target=target,
+        output=output,
+        view=view,
+        view_mode=view_mode,
+        source=source,
+        sources_file=sources_file,
+    )
+
+
+@app.command("scrape")
+def scrape(
+    target: str = typer.Argument(..., help="Compatibility alias for parse"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    view: bool = typer.Option(False, "--view", help="View in a pager instead of writing to disk"),
+    view_mode: str = typer.Option("both", "--view-mode", help="View mode for repositories: both, readme, or tree"),
+    source: bool = typer.Option(False, "--source", help="List saved source URLs for the repository"),
+    sources_file: Optional[str] = typer.Option(None, "--sources-file", help="JSON file containing extra or overridden source URLs"),
+):
+    """
+    Compatibility alias for parse.
+    """
+    _run_parse(
+        target=target,
+        output=output,
+        view=view,
+        view_mode=view_mode,
+        source=source,
+        sources_file=sources_file,
+    )
 
 @app.command()
 def search(
