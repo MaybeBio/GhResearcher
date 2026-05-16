@@ -26,6 +26,7 @@ A powerful GitHub Code & Repo Analysis CLI for Researchers, designed to track ac
       - [Expanded Commits](#expanded-commits)
     - [2. Parsing Repository Context (`parse`)](#2-parsing-repository-context-parse)
     - [3. Searching GitHub (`search`)](#3-searching-github-search)
+  - [Advanced Search Syntax (GitHub)](#advanced-search-syntax-github)
   - [⚠️ Limits \& Caveats](#️-limits--caveats)
 
 
@@ -416,8 +417,6 @@ substep 2), cowritten with Grok'
 2026-05-12 00:00:59 | 💬 Osalotioman created issue '[FKS2]: Upper bound on E_pi (Theorem 6, substep 1)' in 
 AlexKontorovich/PrimeNumberTheoremAnd
 ```
-
-
 #### Batch Monitoring
 Pass a text file with multiple targets (one per line) to merge their activities into a single global timeline.
 ```bash
@@ -571,6 +570,44 @@ Implementation notes:
 
 ---
 
+> 🌟 A Simple Example like:
+
+I want to view the README of a repository, I first check the README to quickly understand the project.
+
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold --view --view-mode readme
+```
+
+![](./figs/1.png)
+
+and then I want to quickly understand the file structure of the repository, so I can check where the main code lives, and where the data lives.
+
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold --view --view-mode tree
+```
+
+![](./figs/2.png)
+
+e.g., I am pretty interested in script /src/common/pdb_utils.py, I can check it by running the following command:
+
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold/src/common/pdb_utils.py --view    
+```
+
+![](./figs/3.png)
+
+finally, I want to check if there are any LLM Annotations for this script.
+
+```bash
+hresearcher parse Junjie-Zhu/IDPFold --source --view
+```
+
+![](./figs/4.png)
+
+I can directly open the default smart reading page in the browser to view the detailed information of the project.
+
+
+
 ### 3. Searching GitHub (`search`)
 
 Perform tailored searches from the terminal.
@@ -581,6 +618,55 @@ Perform tailored searches from the terminal.
 # Search for repositories related to "Deep Learning"
 ghresearcher search repos "Deep Learning" -L Python -l 10
 ```
+
+
+## Advanced Search Syntax (GitHub)
+
+GhResearcher exposes GitHub's search through `ghresearcher search` (a thin wrapper around `gh search`). This section summarizes the advanced search syntax, common qualifiers, and practical examples you can run directly from the CLI.
+
+Core idea
+- GitHub search accepts a free-form query string that can include qualifiers (key:value pairs) and boolean operators. Qualifiers such as `repo:`, `language:`, `path:`, `filename:`, `extension:`, `topic:`, `user:`, `org:`, `stars:`, `size:` narrow results efficiently.
+
+How to use with GhResearcher
+- Basic form: `ghresearcher search <item_type> "<query>" [options]` where `<item_type>` is one of `repos`, `code`, `issues`, `prs`, `commits`, `users`.
+- The CLI helper flags (`--language`, `--owner`, `--repo`, `--topic`, `--extension`, `--filename`) append equivalent qualifiers to the query.
+- `--limit`, `--sort`, and `--order` are passed to `gh` to control result count and ordering.
+
+Useful qualifiers and examples
+- `repo:owner/name` — restrict search to a repository. Example: `repo:MaybeBio/GhResearcher`.
+- `language:Python` — filter by language for repos/code.
+- `path:docs/` — search only inside a path in a repository.
+- `filename:README.md` — find files named `README.md`.
+- `extension:py` — search files by extension.
+- `topic:bioinformatics` — filter repos by topic.
+- `user:username` / `org:orgname` — filter by owner or organization.
+- `stars:>100` / `stars:10..50` — numeric ranges.
+
+Practical examples
+```bash
+# Find Python repos mentioning "LLM" with >50 stars
+ghresearcher search repos "LLM language:Python stars:>50" -l 20
+
+# Search code for TODO comments inside a specific repo
+ghresearcher search code "TODO repo:MaybeBio/GhResearcher" --filename "*.py" -l 50
+
+# Find issues containing "crash" in the MaybeBio organization
+ghresearcher search issues "crash org:MaybeBio" -l 100
+
+# Search code by extension and path inside repos (code search)
+ghresearcher search code "def my_function extension:py path:src/" -l 50
+```
+
+Tips & caveats
+- Use quotes for exact phrases: `"memory leak"`.
+- Combine conditions with `OR` and exclude terms with `-` (e.g. `bug OR error`, `-wip`).
+- `gh search` supports JSON output when needed — for machine parsing prefer `gh`'s `--json` option directly.
+- GitHub search semantics and available qualifiers differ slightly by domain (`code` vs `repos` vs `issues`). Refer to the official docs in `docs/` for details.
+- Rate limits and result pagination may apply — use `--limit` to bound results.
+
+References
+- See the `docs/` folder for harvested GitHub search documentation (`docs_github_com_en_search-github_*`).
+
 
 ---
 

@@ -2,7 +2,7 @@ import base64
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import *
 from urllib.parse import quote
 
 from .gh_client import run_gh_command

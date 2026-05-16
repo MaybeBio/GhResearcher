@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import *
 from rich.console import Console
 from .gh_client import run_gh_command
 

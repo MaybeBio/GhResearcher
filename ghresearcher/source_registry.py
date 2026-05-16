@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import *
 
 
 DEFAULT_SOURCE_ENTRIES: List[Dict[str, Any]] = [

@@ -6,18 +6,24 @@
 
 ## 目录
 
-- [简介 / Introduction](#简介--introduction)
-- [设计哲学 / Design Philosophy](#设计哲学--design-philosophy)
-- [核心特性 / Features](#核心特性--features)
-- [安装说明 / Installation](#安装说明--installation)
+- [GhResearcher 🔬](#ghresearcher-)
+  - [目录](#目录)
+  - [📖 简介 / Introduction](#-简介--introduction)
+  - [🧠 设计哲学 / Design Philosophy](#-设计哲学--design-philosophy)
+  - [✨ 核心特性 / Features](#-核心特性--features)
+  - [⚙️ 安装说明 / Installation](#️-安装说明--installation)
     - [环境依赖](#环境依赖)
     - [安装 GhResearcher](#安装-ghresearcher)
-- [使用指南 / Usage Guide](#使用指南--usage-guide)
-    - [动态监控 (monitor)](#动态监控-monitor)
-        - [监控单个用户](#监控单个用户)
-        - [监控组织 (--org)](#监控组织-org)
-        - [窥探大牛的视野 / 信息流 (--received)](#窥探大牛的视野--信息流-received)
-        - [批量订阅监控](#批量订阅监控)
+  - [🚀 使用指南 / Usage Guide](#-使用指南--usage-guide)
+    - [1. 动态监控 (`monitor`)](#1-动态监控-monitor)
+      - [监控单个用户](#监控单个用户)
+      - [监控组织 / 实验室 (`--org`)](#监控组织--实验室---org)
+      - [监控特定仓库 (`--repo`)](#监控特定仓库---repo)
+      - [窥探大牛的视野 / 信息流 (`--received`)](#窥探大牛的视野--信息流---received)
+      - [批量订阅监控](#批量订阅监控)
+      - [详尽的 Commit 展示 (`--expand-commits`)](#详尽的-commit-展示---expand-commits)
+    - [2. 解析仓库上下文 (`parse`)](#2-解析仓库上下文-parse)
+  - [高级搜索语法（GitHub）](#高级搜索语法github)
 
 
 ## 📖 简介 / Introduction
@@ -411,7 +417,6 @@ substep 2), cowritten with Grok'
 2026-05-12 00:00:59 | 💬 Osalotioman created issue '[FKS2]: Upper bound on E_pi (Theorem 6, substep 1)' in 
 AlexKontorovich/PrimeNumberTheoremAnd
 ```
-
 #### 批量订阅监控
 针对一个写满用户名的纯文本文件（每行一个目标），GhResearcher 会并发抓取所有人动态，并按时间戳降序融合成一个全局时间线。
 ```bash
@@ -560,3 +565,88 @@ ghresearcher parse isblab/disobind --source --sources-file ./sources.json --view
 - `sources.json` 可以同时定义模板型来源和固定 URL 来源。
 - 你也可以通过 `--sources-file` 指向任意 JSON 文件，追加或覆盖收藏 source URL。
 - 仓库根目录下提供了一个可直接修改的示例文件 `sources.example.json`。
+
+--- 
+
+> 🌟 1个简单的例子，例如：
+
+我想查看某一个仓库，我先看一下它的 README 来快速了解这个项目是什么
+
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold --view --view-mode readme
+```
+
+![](./figs/1.png)
+
+然后我想了解一下这个项目的目录结构
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold --view --view-mode tree
+```
+![](./figs/2.png)
+
+比如说我对其中src/common/pdb_utils.py这个文件比较感兴趣，我想看一下它的内容
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold/src/common/pdb_utils.py --view    
+```
+![](./figs/3.png)
+
+然后我想跳转到默认的智能阅读页(这里我们为你提供了一些url选择)，
+```bash
+ghresearcher parse Junjie-Zhu/IDPFold --source --view
+```
+![](./figs/4.png)
+
+
+我就可以直接在浏览器中打开这个智能阅读页，查看这个项目的详细信息
+
+
+--- 
+
+
+
+## 高级搜索语法（GitHub）
+
+GhResearcher 通过 `ghresearcher search` 暴露了 GitHub 搜索能力（底层使用 `gh search`）。下面简要说明高级搜索语法、常用限定词及可直接运行的示例。
+
+核心概念
+- GitHub 搜索接受任意查询字符串，可以携带限定词（`key:value`）和布尔运算符。常见限定词包括 `repo:`、`language:`、`path:`、`filename:`、`extension:`、`topic:`、`user:`、`org:`、`stars:`、`size:` 等。
+
+在 GhResearcher 中如何使用
+- 基本形式：`ghresearcher search <item_type> "<query>" [选项]`，其中 `<item_type>` 可为 `repos`, `code`, `issues`, `prs`, `commits`, `users`。
+- CLI 便捷参数（如 `--language`、`--owner`、`--repo`、`--topic`、`--extension`、`--filename`）会在内部追加对应的限定词。
+- 使用 `--limit`、`--sort`、`--order` 控制返回数量和排序（映射到 `gh`）。
+
+常用限定词与示例
+- `repo:owner/name` — 限定到某个仓库，例如：`repo:MaybeBio/GhResearcher`。
+- `language:Python` — 按语言过滤（仓库/代码搜索）。
+- `path:docs/` — 仅搜索某一路径下的文件。
+- `filename:README.md` — 查找指定文件名。
+- `extension:py` — 按文件后缀过滤。
+- `topic:bioinformatics` — 按仓库 topic 过滤（仓库搜索）。
+- `user:username` / `org:orgname` — 按用户或组织过滤。
+- `stars:>100` / `stars:10..50` — 数值范围。
+
+实用示例
+```bash
+# 查找包含 "LLM" 的 Python 仓库且 star > 50
+ghresearcher search repos "LLM language:Python stars:>50" -l 20
+
+# 在指定仓库中搜索 TODO 注释的 Python 文件
+ghresearcher search code "TODO repo:MaybeBio/GhResearcher" --filename "*.py" -l 50
+
+# 在 MaybeBio 组织中查找包含 "crash" 的 issue
+ghresearcher search issues "crash org:MaybeBio" -l 100
+
+# 在代码搜索中按照扩展名和路径过滤
+ghresearcher search code "def my_function extension:py path:src/" -l 50
+```
+
+提示与注意事项
+- 使用引号检索精确短语：`"memory leak"`。
+- 使用 `OR` 组合条件，使用 `-` 排除项，例如 `bug OR error` 或 `-wip`。
+- 对于机器处理，优先使用 `gh` 的 `--json` 输出；GhResearcher 默认打印 CLI 输出。
+- 不同搜索域（`code` / `repos` / `issues`）支持的限定词与语义略有差异，详见 `docs/` 中的官方文档。
+- 注意 API 限速与分页，使用 `--limit` 控制结果量。
+
+参考资料
+- 仓库 `docs/` 中已收集 GitHub 搜索官方文档（`docs_github_com_en_search-github_*`）。
