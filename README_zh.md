@@ -548,6 +548,55 @@ ghresearcher parse isblab/disobind --source --view
 ghresearcher parse isblab/disobind --source --sources-file ./sources.json --view
 ```
 
+另外考虑到仓库目录树的大小，有些时候会输出不必要的数据文件等干扰信息，我们另外提供了一个压缩目录树的选项 `--clear, -C`, 当开启时，会只显示编程语言文件和 Markdown 文件，其他文件会折叠为 `...` 表示。
+
+本质上就是对trie中每个目录层级的子节点做分类：
+
+```bash
+当前目录的子节点                                                                         
+    ├── 子目录（child 非空 dict）           → 始终保留，继续递归                           
+    ├── 文件名后缀在 _PROGRAMMING_EXTENSIONS → 保留                                        
+    └── 其余文件                            → 合并成 1 个 "..." 
+```
+
+_PROGRAMMING_EXTENSIONS 是一个包含约 100 个后缀的 frozenset，覆盖                        
+  Python、JS/TS、Java/Kotlin、C/C++/Rust/Go、Ruby/PHP/Perl/Lua、Shell、Swift、.NET、R/Julia
+  、Haskell/Elm/Elixir/Erlang/Clojure、Dart、Vue/Svelte、JSON/YAML/TOML、XML、Proto、Terraf
+  orm/HCL、CMake、SQL、GraphQL、Markdown/reST 等。
+
+```python
+# 不改任何旧行为。 所有旧命令一模一样工作：                                                
+                  
+# 输出 README + 完整目录树 -> 行为不变                                                   
+ghresearcher parse isblab/disobind -o Context.md                                         
+                                                                                           
+# 分页查看 -> 行为不变                                                                   
+ghresearcher parse isblab/disobind --view                                                
+                                                                                           
+# 只看 README -> 行为不变                                                                
+ghresearcher parse isblab/disobind --view --view-mode readme                             
+                                                               
+                                                                                           
+# 只看完整目录树 -> 行为不变                                                             
+ghresearcher parse isblab/disobind --view --view-mode tree                               
+                                                                                           
+# 查看单文件 -> 行为不变（--clear 对单文件无意义，会被忽略）                             
+ghresearcher parse isblab/disobind/README.md --view                                      
+                                                                                           
+  
+# 新命令                                                                                   
+                                                                                           
+# 精简目录树（分页）                                                                     
+ghresearcher parse isblab/disobind --view --clear                                        
+                                                                                           
+# 精简目录树（仅树）                                                                     
+ghresearcher parse isblab/disobind --view --view-mode tree --clear                       
+                                                                                           
+# 精简目录树（写文件）                                                                   
+ghresearcher parse isblab/disobind -o Context.md --clear
+
+```
+
 目前支持的默认 `--source`：
 ```json
 {
@@ -604,49 +653,299 @@ ghresearcher parse Junjie-Zhu/IDPFold --source --view
 
 
 
-## 高级搜索语法（GitHub）
+### 3. 多领域高级搜索 (`search`)
 
-GhResearcher 通过 `ghresearcher search` 暴露了 GitHub 搜索能力（底层使用 `gh search`）。下面简要说明高级搜索语法、常用限定词及可直接运行的示例。
+在终端内直接使用 GitHub 强大的搜索引擎，跨越代码库、代码片段、Issues 和 PRs 进行数据挖掘。
+GhResearcher 对底层的 `gh search` 进行了高度封装，提供了**声明式搜索模板（Declarative YAML Config）**，让你免受拼接繁长参数词（`--language`, `--topic`, `--extension` 等）的困扰。
 
-核心概念
-- GitHub 搜索接受任意查询字符串，可以携带限定词（`key:value`）和布尔运算符。常见限定词包括 `repo:`、`language:`、`path:`、`filename:`、`extension:`、`topic:`、`user:`、`org:`、`stars:`、`size:` 等。
+#### 命令行基础用法
 
-在 GhResearcher 中如何使用
-- 基本形式：`ghresearcher search <item_type> "<query>" [选项]`，其中 `<item_type>` 可为 `repos`, `code`, `issues`, `prs`, `commits`, `users`。
-- CLI 便捷参数（如 `--language`、`--owner`、`--repo`、`--topic`、`--extension`、`--filename`）会在内部追加对应的限定词。
-- 使用 `--limit`、`--sort`、`--order` 控制返回数量和排序（映射到 `gh`）。
-
-常用限定词与示例
-- `repo:owner/name` — 限定到某个仓库，例如：`repo:MaybeBio/GhResearcher`。
-- `language:Python` — 按语言过滤（仓库/代码搜索）。
-- `path:docs/` — 仅搜索某一路径下的文件。
-- `filename:README.md` — 查找指定文件名。
-- `extension:py` — 按文件后缀过滤。
-- `topic:bioinformatics` — 按仓库 topic 过滤（仓库搜索）。
-- `user:username` / `org:orgname` — 按用户或组织过滤。
-- `stars:>100` / `stars:10..50` — 数值范围。
-
-实用示例
+**语法格式:**
 ```bash
-# 查找包含 "LLM" 的 Python 仓库且 star > 50
-ghresearcher search repos "LLM language:Python stars:>50" -l 20
-
-# 在指定仓库中搜索 TODO 注释的 Python 文件
-ghresearcher search code "TODO repo:MaybeBio/GhResearcher" --filename "*.py" -l 50
-
-# 在 MaybeBio 组织中查找包含 "crash" 的 issue
-ghresearcher search issues "crash org:MaybeBio" -l 100
-
-# 在代码搜索中按照扩展名和路径过滤
-ghresearcher search code "def my_function extension:py path:src/" -l 50
+ghresearcher search [选项] [搜寻类型] [查询语句]
 ```
 
-提示与注意事项
-- 使用引号检索精确短语：`"memory leak"`。
-- 使用 `OR` 组合条件，使用 `-` 排除项，例如 `bug OR error` 或 `-wip`。
-- 对于机器处理，优先使用 `gh` 的 `--json` 输出；GhResearcher 默认打印 CLI 输出。
-- 不同搜索域（`code` / `repos` / `issues`）支持的限定词与语义略有差异，详见 `docs/` 中的官方文档。
-- 注意 API 限速与分页，使用 `--limit` 控制结果量。
+**支持的核心筛选项:**
+- `--limit`, `-l`: 返回结果最大数量（默认：30）。
+- `--sort`, `-s`: 排序标准（如：`stars`, `forks`, `updated`）。
+- `--order`, `-O`: 排序方式（`asc` 正序 或 `desc` 倒序）。
+- `--language`, `-L`: 限定编程语言。
+- `--topic`, `-t`: 限定仓库主题（仅限仓库）。
+- `--extension`, `-e`: 限定文件后缀（仅限代码）。
+- `--filename`, `-f`: 限定包含特定文件名的文件（仅限代码）。
+- `--owner`, `-o` / `--repo`, `-r`: 将搜索范围收窄至特定组织、用户或仓库。
 
-参考资料
-- 仓库 `docs/` 中已收集 GitHub 搜索官方文档（`docs_github_com_en_search-github_*`）。
+#### 声明式 YAML 配置 (`--config`)
+
+无需死记硬背枯燥的命令参数，你可以将自己高频使用的、或者是极为复杂的检索条件永久保存为 `.yaml` 文件：
+
+```bash
+# 全自动化、一键执行声明的检索模版
+ghresearcher search --config examples/search_ai_repos.yaml
+```
+
+*注意：如果在执行时同时附加了 CLI 参数（如 `-l 5`），CLI 参数将具有最高优先级，会自动覆盖 YAML 中的对应字段。*
+
+#### 实用场景与配置案例
+
+**场景 A: 挖掘高质量开源项目 (`repos`)**
+寻找某个领域高赞的 Python 仓库。
+- **YAML 配置文件 (`examples/search_ai_repos.yaml`):**
+  ```yaml
+  item_type: repos
+  query: "LLM agent"
+  language: Python
+  limit: 20
+  sort: stars
+  order: desc
+  topic: artificial-intelligence
+  ```
+- **CLI 等效命令:**
+  ```bash
+  ghresearcher search repos "LLM agent" -L Python -t artificial-intelligence -s stars -O desc -l 20
+  ```
+
+**场景 B: 定点代码段探索 (`code`)**
+精细化排查指定仓库内的遗留问题（如源码内的 TODO 注释）。*注意：代码搜索由 GitHub 传统代码搜索引擎驱动。*
+- **YAML 配置文件 (`examples/search_code_todos.yaml`):**
+  ```yaml
+  item_type: code
+  query: "TODO"
+  repo: "MaybeBio/GhResearcher"
+  filename: "*.py"
+  extension: "py"
+  limit: 50
+  ```
+- **CLI 等效命令:**
+  ```bash
+  ghresearcher search code "TODO" -r MaybeBio/GhResearcher -f "*.py" -e py -l 50
+  ```
+
+**场景 C: Issues & PRs 动态跟踪 (`issues` / `prs`)**
+追踪庞大组织最近合并修复的 Bug 信息。
+- **YAML 配置文件 (`examples/search_bug_prs.yaml`):**
+  ```yaml
+  item_type: prs
+  query: "fix bug state:merged"
+  owner: "microsoft"
+  limit: 40
+  order: desc
+  ```
+- **CLI 等效命令:**
+  ```bash
+  ghresearcher search prs "fix bug state:merged" -o microsoft -O desc -l 40
+  ```
+
+#### 各搜索域 YAML 模板全参数详解
+
+对于每种 `item_type`，我们提供了一份“全参数覆盖”的通用模板（全面囊括官方支持的所有 Options 与 JSON 字段选项）。实际使用时，你只需保留需要的参数，其余删除或注释掉即可。这些模板均已预置在 `examples/` 目录下（`template_*.yaml`）。
+
+**1. 仓库搜索 (`repos`)**
+```yaml
+item_type: repos
+query: "machine learning"  # 核心搜索词
+
+# 控制层
+limit: 30
+sort: stars
+order: desc
+
+# 布尔标志
+archived: false
+
+# 限定层
+language: python
+topic: deep-learning
+owner: MaybeBio
+match: description
+created: ">=2023-01-01"
+followers: ">=5"
+forks: ">=10"
+good_first_issues: ">=5"
+help_wanted_issues: ">=10"
+include_forks: "false" # 可选: false, true, or only
+license: "mit"
+number_topics: ">=2"
+size: "5000..10000"
+stars: ">=100"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# 输出格式化层
+# json: ["id", "name", "owner", "stargazersCount", "description"]
+# jq: ".[] | .name"
+# template: "{{.name}}"
+```
+
+**2. 代码搜索 (`code`)**
+```yaml
+item_type: code
+query: "TODO"              
+
+# 控制层
+limit: 30
+
+# 限定层
+language: python           
+owner: MaybeBio            
+repo: MaybeBio/GhResearcher 
+extension: py              
+filename: main.py          
+match: file                
+size: "1..50"
+
+# 输出格式化层
+# json: ["url", "path", "repository", "sha"]
+# jq: ".[] | .path"
+# template: "{{.path}}"
+```
+
+**3. Issues 搜索 (`issues`)**
+```yaml
+item_type: issues
+query: "crash label:bug is:open"     
+
+# 控制层
+limit: 30
+sort: comments             
+order: desc
+
+# 布尔标志
+archived: false
+include_prs: false
+locked: false
+
+# 限定层
+app: "some-app"
+assignee: "MaybeBio"
+author: "MaybeBio"
+closed: ">=2023-01-01"
+commenter: "MaybeBio"
+comments: ">=5"
+created: ">=2023-01-01"
+interactions: ">=10"
+involves: "MaybeBio"
+label: "bug"
+language: python              
+match: title               
+mentions: "MaybeBio"
+milestone: "v1.0"
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
+owner: MaybeBio           
+project: "MaybeBio/1"
+reactions: ">=5"
+repo: MaybeBio/GhResearcher   
+state: "open"
+team_mentions: "my-team"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# 输出格式化层
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"
+```
+
+**4. Pull Requests 搜索 (`prs`)**
+```yaml
+item_type: prs
+query: "fix memory leak is:merged" 
+
+# 控制层
+limit: 30 
+sort: updated              
+order: desc
+
+# 布尔标志
+archived: false
+draft: false
+locked: false
+merged: true
+
+# 限定层
+app: "some-app"
+assignee: "MaybeBio"
+author: "MaybeBio"
+base: "main"
+checks: "success" # pending, success, failure
+closed: ">=2023-01-01"
+commenter: "MaybeBio"
+comments: ">=5"
+created: ">=2023-01-01"
+head: "feature-branch"
+interactions: ">=10"
+involves: "MaybeBio"
+label: "bug"
+language: cpp             
+match: body                
+mentions: "MaybeBio"
+merged_at: ">=2023-01-01"
+milestone: "v1.0"
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
+owner: microsoft          
+project: "microsoft/1"
+reactions: ">=5"
+repo: microsoft/terminal  
+review: "approved" # none, required, approved, changes_requested
+review_requested: "MaybeBio"
+reviewed_by: "MaybeBio"
+state: "closed"
+team_mentions: "my-team"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# 输出格式化层
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"
+```
+
+**5. Commits 提交搜索 (`commits`)**
+```yaml
+item_type: commits
+query: "Initial commit"    
+
+# 控制层
+limit: 30
+sort: author-date          
+order: desc
+
+# 布尔标志
+merge: false
+
+# 限定层
+author: "MaybeBio"
+author_date: ">=2023-01-01"
+author_email: "test@example.com"
+author_name: "John Doe"
+committer: "MaybeBio"
+committer_date: ">=2023-01-01"
+committer_email: "test@example.com"
+committer_name: "John Doe"
+hash: "8dd03144ffdc6c0d486d6b705f9c7fba871ee7c3"
+owner: MaybeBio 
+parent: "parent_hash"
+repo: MaybeBio/GhResearcher
+tree: "tree_hash"
+visibility: "public"
+
+# 输出格式化层
+# json: ["id", "commit", "author", "url"]
+# jq: ".[] | .commit.message"
+# template: "{{.commit.message}}"
+```
+
+#### 提示与注意事项
+- **精确匹配:** 请使用双引号包含需精确检索的短语结构（例 `"memory leak"`）。
+- **逻辑运算:** 限定词支持 `OR`，以及通过前置横杠 `-` 排除（如 `bug OR error`, `-wip`）。
+  *警告:* 若你的查询字符串本体直接以 `-` 起始，终端命令行可能会将其误识别为 Flag 参数（Unix 需使用 `--` 隔断，PowerShell 需使用 `--%`）。
+- **域边界差异:** 不同搜索类型（item_type）可用的过滤器并不通用。例如 `--topic` 仅能查 `repos`，而 `--extension` 仅能查 `code`。
+- **参考资料:** 想深究更详尽的 Qualifiers 映射支持表，可直接翻阅仓库 `docs/` 下收集的 GitHub 官方手册 (`docs_github_com_en_search-github_*`)。
+
+

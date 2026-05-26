@@ -1,0 +1,31 @@
+item_type: commits
+query: "Initial commit"
+
+# Result Controls
+limit: 30
+sort: author-date
+order: desc
+
+# Boolean Flags
+merge: false
+
+# Filter Qualifiers
+author: "MaybeBio"
+author_date: ">=2023-01-01"
+author_email: "test@example.com"
+author_name: "John Doe"
+committer: "MaybeBio"
+committer_date: ">=2023-01-01"
+committer_email: "test@example.com"
+committer_name: "John Doe"
+hash: "8dd03144ffdc6c0d486d6b705f9c7fba871ee7c3"
+owner: MaybeBio
+parent: "parent_hash"
+repo: MaybeBio/GhResearcher
+tree: "tree_hash"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "commit", "author", "url"]
+# jq: ".[] | .commit.message"
+# template: "{{.commit.message}}"

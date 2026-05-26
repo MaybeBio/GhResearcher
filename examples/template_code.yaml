@@ -1,0 +1,19 @@
+item_type: code
+query: "TODO"
+
+# Result Controls
+limit: 30
+
+# Filter Qualifiers
+language: python
+owner: MaybeBio
+repo: MaybeBio/GhResearcher
+extension: py
+filename: main.py
+match: file
+size: "1..50"
+
+# Formatting Options
+# json: ["url", "path", "repository", "sha"]
+# jq: ".[] | .path"
+# template: "{{.path}}"

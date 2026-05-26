@@ -10,7 +10,7 @@ authors = [
   ] 
 description = "A GitHub Code & Repo Analysis CLI for Researchers"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "GPL-3.0"
 license-files = ["LICENSE"]
 keywords = ["github", "CLI", "github monitor", "github parse", "github search", "code discovery", "trending"]
 
@@ -19,8 +19,11 @@ requires-python = ">=3.8"
 dependencies = [
     "typer>=0.25.0",
     "rich>=15.0.0",
-    "textual>=8.2.5"
+    "textual>=8.2.5",
+    "PyYAML>=6.0"
 ]
 
 [project.scripts]
+# src 里面的包，直接写包名，不要加 src.
 ghresearcher = "ghresearcher.cli:app"
+ 

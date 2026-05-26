@@ -1,0 +1,7 @@
+item_type: repos
+query: "LLM agent"
+language: Python
+limit: 20
+sort: stars
+order: desc
+topic: artificial-intelligence

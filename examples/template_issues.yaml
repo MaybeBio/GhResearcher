@@ -1,0 +1,45 @@
+item_type: issues
+query: "crash label:bug is:open"
+
+# Result Controls
+limit: 30
+sort: comments
+order: desc
+
+# Boolean Flags
+archived: false
+include_prs: false
+locked: false
+
+# Filter Qualifiers
+app: "some-app"
+assignee: "MaybeBio"
+author: "MaybeBio"
+closed: ">=2023-01-01"
+commenter: "MaybeBio"
+comments: ">=5"
+created: ">=2023-01-01"
+interactions: ">=10"
+involves: "MaybeBio"
+label: "bug"
+language: python
+match: title
+mentions: "MaybeBio"
+milestone: "v1.0"
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
+owner: MaybeBio
+project: "MaybeBio/1"
+reactions: ">=5"
+repo: MaybeBio/GhResearcher
+state: "open"
+team_mentions: "my-team"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"

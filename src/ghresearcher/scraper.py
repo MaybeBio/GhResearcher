@@ -8,6 +8,37 @@ from urllib.parse import quote
 from .gh_client import run_gh_command
 from .source_registry import format_source_catalog
 
+# keep only these extensions
+# reomve ".json"/".yaml"/".yml"/".toml"/".ini"/".cfg"/".conf" if we want to exclude config files
+# remove ".xml" if we want to exclude xml files
+_PROGRAMMING_EXTENSIONS: FrozenSet[str] = frozenset({
+    ".py", ".pyx", ".pxd", ".pyi", ".pyw",
+    ".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx",
+    ".html", ".htm", ".css", ".scss", ".sass", ".less",
+    ".java", ".kt", ".kts", ".scala", ".groovy", ".gradle",
+    ".c", ".cpp", ".cc", ".cxx", ".h", ".hpp", ".hh", ".hxx",
+    ".rs", ".go", ".zig",
+    ".rb", ".rake", ".php", ".phtml", ".pl", ".pm", ".lua", ".tcl",
+    ".sh", ".bash", ".zsh", ".fish", ".ps1", ".psm1", ".psd1",
+    ".swift", ".m", ".mm",
+    ".cs", ".fs", ".fsx", ".vb",
+    ".r", ".jl", ".ipynb",
+    ".hs", ".lhs", ".elm", ".ex", ".exs", ".erl", ".hrl",
+    ".clj", ".cljs", ".cljc", ".edn",
+    ".dart", ".vue", ".svelte",
+    ".xsl", ".xslt", ".svg",
+    ".proto", ".avsc", ".thrift",
+    ".tf", ".tfvars", ".hcl",
+    ".cmake", ".mk", ".meson",
+    ".sql", ".psql",
+    ".graphql", ".gql",
+    ".md", ".mdx", ".rst", ".markdown",
+    ".lock",
+    ".tex", ".sty", ".cls", ".bib",
+})
+
+
+
 def get_repo_view(repo_name: str) -> str:
     """
     Get the description and README of a repository using 'gh repo view'.
@@ -72,9 +103,11 @@ def get_repo_tree_entries(repo_name: str) -> List[Dict]:
     return tree_info.get("tree", [])
 
 
-def render_tree_from_paths(paths: Iterable[str], root_label: str) -> str:
+def render_tree_from_paths(paths: Iterable[str], root_label: str, compact: bool = False) -> str:
     """
     Render a tree view from a collection of repository paths.
+    When compact=True, only programming/md files are shown per directory;
+    all other files at that level are collapsed into a single '...' entry.
     """
     trie: Dict[str, Dict] = {}
 
@@ -88,19 +121,46 @@ def render_tree_from_paths(paths: Iterable[str], root_label: str) -> str:
     lines = [f"{root_label}/"]
 
     def walk(node: Dict[str, Dict], prefix: str = "") -> None:
-        items = sorted(node.items(), key=lambda item: (len(item[1]) == 0, item[0].lower()))
-        for index, (name, child) in enumerate(items):
-            is_last = index == len(items) - 1
-            connector = "└── " if is_last else "├── "
-            lines.append(f"{prefix}{connector}{name}")
-            if child:
-                walk(child, prefix + ("    " if is_last else "│   "))
+        if compact:
+            dirs: Dict[str, Dict] = {}
+            interesting_files: Dict[str, Dict] = {}
+            other_count = 0
+
+            for name, child in node.items():
+                if child:
+                    dirs[name] = child
+                elif Path(name).suffix.lower() in _PROGRAMMING_EXTENSIONS:
+                    interesting_files[name] = child
+                else:
+                    other_count += 1
+
+            display = (
+                sorted(dirs.items(), key=lambda item: item[0].lower())
+                + sorted(interesting_files.items(), key=lambda item: item[0].lower())
+            )
+            if other_count > 0:
+                display.append(("...", {}))
+
+            for index, (name, child) in enumerate(display):
+                is_last = index == len(display) - 1
+                connector = "└── " if is_last else "├── "
+                lines.append(f"{prefix}{connector}{name}")
+                if child:
+                    walk(child, prefix + ("    " if is_last else "│   "))
+        else:
+            items = sorted(node.items(), key=lambda item: (len(item[1]) == 0, item[0].lower()))
+            for index, (name, child) in enumerate(items):
+                is_last = index == len(items) - 1
+                connector = "└── " if is_last else "├── "
+                lines.append(f"{prefix}{connector}{name}")
+                if child:
+                    walk(child, prefix + ("    " if is_last else "│   "))
 
     walk(trie)
     return "\n".join(lines)
 
 
-def generate_tree_from_clone(repo_name: str) -> str:
+def generate_tree_from_clone(repo_name: str, compact: bool = False) -> str:
     """
     Generate an ASCII tree by shallow-cloning the repository into a temporary directory.
     """
@@ -112,10 +172,9 @@ def generate_tree_from_clone(repo_name: str) -> str:
             check=True,
         )
 
-        def walk(path: Path, ignore_dirs: Optional[set] = None) -> List[str]:
-            if ignore_dirs is None:
-                ignore_dirs = {".git", "build", "vendor", "__pycache__", "node_modules"}
+        ignore_dirs = {".git", "build", "vendor", "__pycache__", "node_modules"}
 
+        def list_entries(path: Path) -> List[Path]:
             entries = []
             for entry in sorted(path.iterdir(), key=lambda item: (not item.is_dir(), item.name)):
                 if entry.name in ignore_dirs or entry.name.startswith("."):
@@ -126,19 +185,47 @@ def generate_tree_from_clone(repo_name: str) -> str:
         lines = [f"{repo_dir.name}/"]
 
         def render(path: Path, prefix: str = "") -> None:
-            entries = walk(path)
-            for index, entry in enumerate(entries):
-                is_last = index == len(entries) - 1
-                connector = "└── " if is_last else "├── "
-                lines.append(f"{prefix}{connector}{entry.name}")
-                if entry.is_dir():
-                    render(entry, prefix + ("    " if is_last else "│   "))
+            entries = list_entries(path)
+            if compact:
+                dirs: List[Path] = []
+                interesting_files: List[Path] = []
+                other_count = 0
+
+                for entry in entries:
+                    if entry.is_dir():
+                        dirs.append(entry)
+                    elif entry.suffix.lower() in _PROGRAMMING_EXTENSIONS:
+                        interesting_files.append(entry)
+                    else:
+                        other_count += 1
+
+                display: List[Tuple[str, bool, Optional[Path]]] = []
+                for d in dirs:
+                    display.append((d.name, True, d))
+                for f in interesting_files:
+                    display.append((f.name, False, f))
+                if other_count > 0:
+                    display.append(("...", False, None))
+
+                for index, (name, is_dir, child_path) in enumerate(display):
+                    is_last = index == len(display) - 1
+                    connector = "└── " if is_last else "├── "
+                    lines.append(f"{prefix}{connector}{name}")
+                    if is_dir and child_path is not None:
+                        render(child_path, prefix + ("    " if is_last else "│   "))
+            else:
+                for index, entry in enumerate(entries):
+                    is_last = index == len(entries) - 1
+                    connector = "└── " if is_last else "├── "
+                    lines.append(f"{prefix}{connector}{entry.name}")
+                    if entry.is_dir():
+                        render(entry, prefix + ("    " if is_last else "│   "))
 
         render(repo_dir)
         return "\n".join(lines)
 
 
-def build_repository_context(repo_name: str) -> str:
+def build_repository_context(repo_name: str, compact: bool = False) -> str:
     """
     Build the full repository context: gh repo view plus a tree derived from GitHub API.
     """
@@ -146,10 +233,10 @@ def build_repository_context(repo_name: str) -> str:
     try:
         tree_entries = get_repo_tree_entries(repo_name)
         tree_paths = [entry.get("path", "") for entry in tree_entries if entry.get("path")]
-        tree_output = render_tree_from_paths(tree_paths, repo_name)
+        tree_output = render_tree_from_paths(tree_paths, repo_name, compact=compact)
         tree_source = "GitHub API"
     except Exception:
-        tree_output = generate_tree_from_clone(repo_name)
+        tree_output = generate_tree_from_clone(repo_name, compact=compact)
         tree_source = "shallow clone fallback"
 
     content = [
@@ -213,7 +300,7 @@ def build_file_context(repo_name: str, file_path: str) -> str:
     return content
 
 
-def build_parse_text(target: str, source: Optional[str] = None, sources_file: Optional[str] = None) -> str:
+def build_parse_text(target: str, source: Optional[str] = None, sources_file: Optional[str] = None, compact: bool = False) -> str:
     """
     Build the text that parse should render or save.
     """
@@ -226,10 +313,10 @@ def build_parse_text(target: str, source: Optional[str] = None, sources_file: Op
     if file_path:
         return build_file_context(repo_name, file_path)
 
-    return build_repository_context(repo_name)
+    return build_repository_context(repo_name, compact=compact)
 
 
-def build_parse_view(target: str, view_mode: str = "both", source: Optional[str] = None, sources_file: Optional[str] = None) -> str:
+def build_parse_view(target: str, view_mode: str = "both", source: Optional[str] = None, sources_file: Optional[str] = None, compact: bool = False) -> str:
     """
     Build text for pager display. View mode controls whether README, tree, or both are shown.
     """
@@ -249,11 +336,11 @@ def build_parse_view(target: str, view_mode: str = "both", source: Optional[str]
         try:
             tree_entries = get_repo_tree_entries(repo_name)
             tree_paths = [entry.get("path", "") for entry in tree_entries if entry.get("path")]
-            return render_tree_from_paths(tree_paths, repo_name)
+            return render_tree_from_paths(tree_paths, repo_name, compact=compact)
         except Exception:
-            return generate_tree_from_clone(repo_name)
+            return generate_tree_from_clone(repo_name, compact=compact)
 
-    return build_repository_context(repo_name)
+    return build_repository_context(repo_name, compact=compact)
 
 
 def build_source_catalog_text(target: str, sources_file: Optional[str] = None) -> str:

@@ -1,0 +1,5 @@
+item_type: prs
+query: "fix bug state:merged"
+owner: "microsoft"
+limit: 40
+order: desc

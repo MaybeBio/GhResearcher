@@ -610,62 +610,298 @@ I can directly open the default smart reading page in the browser to view the de
 
 ### 3. Searching GitHub (`search`)
 
-Perform tailored searches from the terminal.
+Perform tailored searches across multi-domains (repos, code, issues, PRs) directly from the terminal. 
+GhResearcher exposes the full power of GitHub's search engine while offering **Declarative Search Profiles (YAML)** to relieve the mental burden of typing long, complex qualifier strings (`--language`, `--topic`, `--extension`, etc.).
 
-**Usage:** `ghresearcher search [item_type] [query]`
+#### Command Line Usage
 
+**Basic Syntax:**
 ```bash
-# Search for repositories related to "Deep Learning"
-ghresearcher search repos "Deep Learning" -L Python -l 10
+ghresearcher search [OPTIONS] [ITEM_TYPE] [QUERY]
 ```
 
+**Common Flags mapped from CLI:**
+- `--limit`, `-l`: Maximum results to return (default: 30).
+- `--sort`, `-s`: Sort criteria (e.g., `stars`, `forks`, `updated`).
+- `--order`, `-O`: Sort order (`asc` or `desc`).
+- `--language`, `-L`: Filter by programming language.
+- `--topic`, `-t`: Filter by repository topic.
+- `--extension`, `-e`: Filter by file extension (for code).
+- `--filename`, `-f`: Filter by specific filename (for code).
+- `--owner`, `-o` / `--repo`, `-r`: Narrow down scope to a user/org or specific repository.
 
-## Advanced Search Syntax (GitHub)
+#### Declarative YAML Configurations (`--config`)
 
-GhResearcher exposes GitHub's search through `ghresearcher search` (a thin wrapper around `gh search`). This section summarizes the advanced search syntax, common qualifiers, and practical examples you can run directly from the CLI.
+Instead of memorizing flags, you can save your daily or complex search patterns as YAML files and call them instantly:
 
-Core idea
-- GitHub search accepts a free-form query string that can include qualifiers (key:value pairs) and boolean operators. Qualifiers such as `repo:`, `language:`, `path:`, `filename:`, `extension:`, `topic:`, `user:`, `org:`, `stars:`, `size:` narrow results efficiently.
-
-How to use with GhResearcher
-- Basic form: `ghresearcher search <item_type> "<query>" [options]` where `<item_type>` is one of `repos`, `code`, `issues`, `prs`, `commits`, `users`.
-- The CLI helper flags (`--language`, `--owner`, `--repo`, `--topic`, `--extension`, `--filename`) append equivalent qualifiers to the query.
-- `--limit`, `--sort`, and `--order` are passed to `gh` to control result count and ordering.
-
-Useful qualifiers and examples
-- `repo:owner/name` — restrict search to a repository. Example: `repo:MaybeBio/GhResearcher`.
-- `language:Python` — filter by language for repos/code.
-- `path:docs/` — search only inside a path in a repository.
-- `filename:README.md` — find files named `README.md`.
-- `extension:py` — search files by extension.
-- `topic:bioinformatics` — filter repos by topic.
-- `user:username` / `org:orgname` — filter by owner or organization.
-- `stars:>100` / `stars:10..50` — numeric ranges.
-
-Practical examples
 ```bash
-# Find Python repos mentioning "LLM" with >50 stars
-ghresearcher search repos "LLM language:Python stars:>50" -l 20
-
-# Search code for TODO comments inside a specific repo
-ghresearcher search code "TODO repo:MaybeBio/GhResearcher" --filename "*.py" -l 50
-
-# Find issues containing "crash" in the MaybeBio organization
-ghresearcher search issues "crash org:MaybeBio" -l 100
-
-# Search code by extension and path inside repos (code search)
-ghresearcher search code "def my_function extension:py path:src/" -l 50
+# Execute a saved search profile
+ghresearcher search --config examples/search_ai_repos.yaml
 ```
 
-Tips & caveats
-- Use quotes for exact phrases: `"memory leak"`.
-- Combine conditions with `OR` and exclude terms with `-` (e.g. `bug OR error`, `-wip`).
-- `gh search` supports JSON output when needed — for machine parsing prefer `gh`'s `--json` option directly.
-- GitHub search semantics and available qualifiers differ slightly by domain (`code` vs `repos` vs `issues`). Refer to the official docs in `docs/` for details.
-- Rate limits and result pagination may apply — use `--limit` to bound results.
+*Note: CLI flags will always override the corresponding keys mapped in the YAML configuration.*
 
-References
-- See the `docs/` folder for harvested GitHub search documentation (`docs_github_com_en_search-github_*`).
+#### Practical Scenarios & Examples
+
+**Scenario A: Finding High-Quality Repositories (`repos`)**
+Targeting trending or specific subsets of repositories.
+- **YAML Config (`examples/search_ai_repos.yaml`):**
+  ```yaml
+  item_type: repos
+  query: "LLM agent"
+  language: Python
+  limit: 20
+  sort: stars
+  order: desc
+  topic: artificial-intelligence
+  ```
+- **Equivalent CLI:**
+  ```bash
+  ghresearcher search repos "LLM agent" -L Python -t artificial-intelligence -s stars -O desc -l 20
+  ```
+
+**Scenario B: Exploring Codebase & Snippets (`code`)**
+Looking for implementation details or "TODOs" in a specific codebase. *Note: Code search results are powered by GitHub's legacy code search engine.*
+- **YAML Config (`examples/search_code_todos.yaml`):**
+  ```yaml
+  item_type: code
+  query: "TODO"
+  repo: "MaybeBio/GhResearcher"
+  filename: "*.py"
+  extension: "py"
+  limit: 50
+  ```
+- **Equivalent CLI:**
+  ```bash
+  ghresearcher search code "TODO" -r MaybeBio/GhResearcher -f "*.py" -e py -l 50
+  ```
+
+**Scenario C: Analyzing Issues & Pull Requests (`issues` / `prs`)**
+Tracking closed bug fixes within a specific organization to monitor the pulse of their development.
+- **YAML Config (`examples/search_bug_prs.yaml`):**
+  ```yaml
+  item_type: prs
+  query: "fix bug state:merged"
+  owner: "microsoft"
+  limit: 40
+  order: desc
+  ```
+- **Equivalent CLI:**
+  ```bash
+  ghresearcher search prs "fix bug state:merged" -o microsoft -O desc -l 40
+  ```
+
+#### Comprehensive YAML Templates Reference
+
+For each `item_type`, we provide a fully-loaded template showing all possible parameters. You only need to define the parameters you care about; comment out or delete the rest. These templates are available in the `examples/` directory.
+
+**1. Repositories (`repos`)**
+```yaml
+item_type: repos
+query: "machine learning"  # Core keywords
+
+# Result Controls
+limit: 30
+sort: stars
+order: desc
+
+# Boolean Flags
+archived: false
+
+# Filter Qualifiers
+language: python
+topic: deep-learning
+owner: MaybeBio
+match: description
+created: ">=2023-01-01"
+followers: ">=5"
+forks: ">=10"
+good_first_issues: ">=5"
+help_wanted_issues: ">=10"
+include_forks: "false" # false, true, or only
+license: "mit"
+number_topics: ">=2"
+size: "5000..10000"
+stars: ">=100"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "name", "owner", "stargazersCount", "description"]
+# jq: ".[] | .name"
+# template: "{{.name}}"
+```
+
+**2. Code (`code`)**
+```yaml
+item_type: code
+query: "TODO"
+
+# Result Controls
+limit: 30
+
+# Filter Qualifiers
+language: python
+owner: MaybeBio
+repo: MaybeBio/GhResearcher 
+extension: py              
+filename: main.py          
+match: file                
+size: "1..50"
+
+# Formatting Options
+# json: ["url", "path", "repository", "sha"]
+# jq: ".[] | .path"
+# template: "{{.path}}"
+```
+
+**3. Issues (`issues`)**
+```yaml
+item_type: issues
+query: "crash label:bug is:open"
+
+# Result Controls
+limit: 30
+sort: comments
+order: desc
+
+# Boolean Flags
+archived: false
+include_prs: false
+locked: false
+
+# Filter Qualifiers
+app: "some-app"
+assignee: "MaybeBio"
+author: "MaybeBio"
+closed: ">=2023-01-01"
+commenter: "MaybeBio"
+comments: ">=5"
+created: ">=2023-01-01"
+interactions: ">=10"
+involves: "MaybeBio"
+label: "bug"
+language: python
+match: title
+mentions: "MaybeBio"
+milestone: "v1.0"
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
+owner: MaybeBio
+project: "MaybeBio/1"
+reactions: ">=5"
+repo: MaybeBio/GhResearcher
+state: "open"
+team_mentions: "my-team"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"
+```
+
+**4. Pull Requests (`prs`)**
+```yaml
+item_type: prs
+query: "fix memory leak is:merged" 
+
+# Result Controls
+limit: 30 
+sort: updated
+order: desc
+
+# Boolean Flags
+archived: false
+draft: false
+locked: false
+merged: true
+
+# Filter Qualifiers
+app: "some-app"
+assignee: "MaybeBio"
+author: "MaybeBio"
+base: "main"
+checks: "success" # pending, success, failure
+closed: ">=2023-01-01"
+commenter: "MaybeBio"
+comments: ">=5"
+created: ">=2023-01-01"
+head: "feature-branch"
+interactions: ">=10"
+involves: "MaybeBio"
+label: "bug"
+language: cpp             
+match: body
+mentions: "MaybeBio"
+merged_at: ">=2023-01-01"
+milestone: "v1.0"
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
+owner: microsoft          
+project: "microsoft/1"
+reactions: ">=5"
+repo: microsoft/terminal  
+review: "approved" # none, required, approved, changes_requested
+review_requested: "MaybeBio"
+reviewed_by: "MaybeBio"
+state: "closed"
+team_mentions: "my-team"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"
+```
+
+**5. Commits (`commits`)**
+```yaml
+item_type: commits
+query: "Initial commit"
+
+# Result Controls
+limit: 30                 
+sort: author-date         
+order: desc               
+
+# Boolean Flags
+merge: false
+
+# Filter Qualifiers
+author: "MaybeBio"
+author_date: ">=2023-01-01"
+author_email: "test@example.com"
+author_name: "John Doe"
+committer: "MaybeBio"
+committer_date: ">=2023-01-01"
+committer_email: "test@example.com"
+committer_name: "John Doe"
+hash: "8dd03144ffdc6c0d486d6b705f9c7fba871ee7c3"
+owner: MaybeBio           
+parent: "parent_hash"
+repo: MaybeBio/GhResearcher 
+tree: "tree_hash"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "commit", "author", "url"]
+# jq: ".[] | .commit.message"
+# template: "{{.commit.message}}"
+```
+
+#### Tips & Caveats
+- **Exact Phrases:** Use quotes for exact phrase matching (e.g., `"memory leak"`).
+- **Boolean Logic:** Combine conditions with `OR`, and exclude terms using a hyphen `-` (e.g., `bug OR error`, `-wip`).
+  *Warning:* If you pass a query starting with `-` directly in the shell, you must escape it (Unix: pass `--` before the query; PowerShell: use `--%`).
+- **Domain Differences:** Available qualifiers vary depending on the `item_type`. For instance, `--topic` only works on `repos`, whereas `--extension` only works on `code`.
+- **References:** See the `docs/` folder for official harvested GitHub search documentation.
 
 
 ---

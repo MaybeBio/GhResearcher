@@ -1,0 +1,6 @@
+item_type: code
+query: "TODO"
+repo: "MaybeBio/GhResearcher"
+filename: "*.py"
+extension: "py"
+limit: 50

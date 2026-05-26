@@ -1,0 +1,53 @@
+item_type: prs
+query: "fix memory leak is:merged"
+
+# Result Controls
+limit: 30
+sort: updated
+order: desc
+
+# Boolean Flags
+archived: false
+draft: false
+locked: false
+merged: true
+
+# Filter Qualifiers
+app: "some-app"
+assignee: "MaybeBio"
+author: "MaybeBio"
+base: "main"
+checks: "success" # pending, success, failure
+closed: ">=2023-01-01"
+commenter: "MaybeBio"
+comments: ">=5"
+created: ">=2023-01-01"
+head: "feature-branch"
+interactions: ">=10"
+involves: "MaybeBio"
+label: "bug"
+language: cpp
+match: body
+mentions: "MaybeBio"
+merged_at: ">=2023-01-01"
+milestone: "v1.0"
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
+owner: microsoft
+project: "microsoft/1"
+reactions: ">=5"
+repo: microsoft/terminal
+review: "approved" # none, required, approved, changes_requested
+review_requested: "MaybeBio"
+reviewed_by: "MaybeBio"
+state: "closed"
+team_mentions: "my-team"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"

@@ -131,6 +131,7 @@ def _run_parse(
     view_mode: str,
     source: bool,
     sources_file: Optional[str],
+    clear: bool = False,
 ) -> None:
     output_name = output or _default_output_name(target, source_catalog=source)
 
@@ -148,7 +149,7 @@ def _run_parse(
             if source:
                 text = build_source_catalog_text(target, sources_file=sources_file)
             else:
-                text = build_parse_view(target, view_mode=view_mode, source=None, sources_file=sources_file)
+                text = build_parse_view(target, view_mode=view_mode, source=None, sources_file=sources_file, compact=clear)
             with console.pager():
                 console.print(text)
             return
@@ -156,7 +157,7 @@ def _run_parse(
         if source:
             text = build_source_catalog_text(target, sources_file=sources_file)
         else:
-            text = build_parse_text(target, source=None, sources_file=sources_file)
+            text = build_parse_text(target, source=None, sources_file=sources_file, compact=clear)
 
         with open(output_name, "w", encoding="utf-8") as f:
             f.write(text)
@@ -174,6 +175,7 @@ def parse(
     view_mode: str = typer.Option("both", "--view-mode", help="View mode for repositories: both, readme, or tree"),
     source: bool = typer.Option(False, "--source", help="List saved source URLs for the repository"),
     sources_file: Optional[str] = typer.Option(None, "--sources-file", help="JSON file containing extra or overridden source URLs"),
+    clear: bool = typer.Option(False, "--clear", "-C", help="Compact tree: show only programming/md files, collapse other files to '...'"),
 ):
     """
     Parse a repository, file, or source URL into Markdown/text.
@@ -185,6 +187,7 @@ def parse(
         view_mode=view_mode,
         source=source,
         sources_file=sources_file,
+        clear=clear,
     )
 
 
@@ -196,6 +199,7 @@ def scrape(
     view_mode: str = typer.Option("both", "--view-mode", help="View mode for repositories: both, readme, or tree"),
     source: bool = typer.Option(False, "--source", help="List saved source URLs for the repository"),
     sources_file: Optional[str] = typer.Option(None, "--sources-file", help="JSON file containing extra or overridden source URLs"),
+    clear: bool = typer.Option(False, "--clear", "-C", help="Compact tree: show only programming/md files, collapse other files to '...'"),
 ):
     """
     Compatibility alias for parse.
@@ -207,33 +211,62 @@ def scrape(
         view_mode=view_mode,
         source=source,
         sources_file=sources_file,
+        clear=clear,
     )
 
 @app.command()
 def search(
-    item_type: str = typer.Argument(..., help="Type to search: repos, code, issues, prs, commits, users"),
-    query: str = typer.Argument(..., help="The search query"),
+    item_type: Optional[str] = typer.Argument(None, help="Type to search: repos, code, issues, prs, commits"),
+    query: Optional[str] = typer.Argument(None, help="The search query"),
+    config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML search config file"),
+    # Common CLI overrides
     limit: int = typer.Option(30, "--limit", "-l", help="Maximum results"),
     sort: Optional[str] = typer.Option(None, "--sort", "-s", help="Sort criteria"),
-    order: Optional[str] = typer.Option("desc", "--order", "-O", help="Order (asc/desc)"),
-    language: Optional[str] = typer.Option(None, "--language", "-L", help="Filter by language"),
-    topic: Optional[str] = typer.Option(None, "--topic", "-t", help="Filter by topic (repos only)"),
-    match: Optional[str] = typer.Option(None, "--match", "-m", help="Match specific fields")
+    order: Optional[str] = typer.Option(None, "--order", "-O", help="Order (asc/desc)")
 ):
     """
     Search GitHub across multi-domains (repos, code, issues) with full query support.
+    Accepts command line arguments or a structured YAML config profile.
     """
-    console.print(f"[bold blue]Searching {item_type} for '{query}'...[/bold blue]")
+    yaml_data = {}
+    if config:
+        try:
+            import yaml
+        except ImportError:
+            console.print("[red]Error: PyYAML not found! Please run 'pip install PyYAML'.[/red]")
+            raise typer.Exit(1)
+            
+        if not config.is_file():
+            console.print(f"[red]Error: Configuration file not found at {config}[/red]")
+            raise typer.Exit(1)
+            
+        with open(config, "r", encoding="utf-8") as f:
+            yaml_data = yaml.safe_load(f) or {}
+
+    final_item_type = item_type or yaml_data.get("item_type")
+    final_query = query or yaml_data.get("query")
+    
+    if not final_item_type or not final_query:
+        console.print("[red]Error: Missing required parameters. Please provide 'item_type' and 'query' either via CLI or YAML config.[/red]")
+        raise typer.Exit(1)
+        
+    # CLI options take precedence over yaml_data if explicitly set
+    if limit != 30:
+        yaml_data["limit"] = limit
+    if "limit" not in yaml_data:
+        yaml_data["limit"] = 30
+        
+    if sort:
+        yaml_data["sort"] = sort
+    if order:
+        yaml_data["order"] = order
+
+    console.print(f"[bold blue]Searching {final_item_type} for '{final_query}' " + (f"(via {config.name})" if config else "") + "...[/bold blue]")
     try:
         search_github(
-            item_type=item_type,
-            query=query,
-            limit=limit,
-            sort=sort,
-            order=order,
-            language=language,
-            topic=topic,
-            match=match
+            item_type=final_item_type,
+            query=final_query,
+            config=yaml_data
         )
     except Exception as e:
         console.print(f"[red]Search failed: {e}[/red]")
