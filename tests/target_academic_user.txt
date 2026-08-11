@@ -8,6 +8,8 @@
 alexholehouse
 
 # 2️⃣ Chenlab（陈海峰）
+# https://life.sjtu.edu.cn/teacher/HaifengChen
+
 # https://github.com/HFChenLab，idr、蛋白质构象、力场设计
 HFChenLab
 
@@ -27,17 +29,39 @@ Zuricho
 Immortals-33
 
 # https://github.com/weitinging，抗体设计
+weitinging
 
 # https://github.com/ji-xiaoyue
 ji-xiaoyue
 
+# https://github.com/Zirui-Fan，蛋白质设计，结构生成，分子动力学
+Zirui-Fan
+
+# https://github.com/borrytod
+borrytod
+
 # 3️⃣ Honglab（洪亮）
+# https://ins.sjtu.edu.cn/people/lhong/index.html
+
 # https://github.com/tyang816，蛋白质设计、功能预测、语言模型
 tyang816
 
-# https://github.com/code4luck
+# https://github.com/mingchen-li，蛋白质学习，bench
+mingchen-li
 
-# 3️⃣ Others
+# https://github.com/code4luck，蛋白质互作，多模态
+code4luck
+
+# https://github.com/zy-zhou，蛋白质互作，多模态
+zy-zhou
+
+# https://github.com/riacd，蛋白质bench
+riacd
+
+# https://github.com/terry-r123，蛋白质/核酸bench
+terry-r123
+
+# 4️⃣ Others
 # https://github.com/lujiarui，蛋白质构象，蛋白质设计
 lujiarui
 
@@ -82,3 +106,5 @@ QizhiPei
 
 # https://github.com/thematrixmaster，蛋白质设计
 thematrixmaster
+
+
