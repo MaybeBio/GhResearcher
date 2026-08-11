@@ -48,7 +48,7 @@ borrytod
 # 3️⃣ Xionglab（熊毅）
 # https://life.sjtu.edu.cn/teacher/yxiong
 
-# https://github.com/xlab-BioAI，
+# https://github.com/xlab-BioAI，RNA、蛋白质设计
 xlab-BioAI
 
 # https://github.com/SII-ShenggengLin，RNA设计，RNA结构
