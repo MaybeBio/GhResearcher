@@ -1,12 +1,13 @@
 #######################################
 # For academic (后续可以拆分多个list独立)
+# 圈子 instead of people
 #######################################
 
 # 1️⃣ holehouse lab
 # https://github.com/alexholehouse，idr核心组
 alexholehouse
 
-# 2️⃣ Chenlab
+# 2️⃣ Chenlab（陈海峰）
 # https://github.com/HFChenLab，idr、蛋白质构象、力场设计
 HFChenLab
 
@@ -30,9 +31,14 @@ Immortals-33
 # https://github.com/ji-xiaoyue
 ji-xiaoyue
 
+# 3️⃣ Honglab（洪亮）
+# https://github.com/tyang816，蛋白质设计、功能预测、语言模型
+tyang816
+
+# https://github.com/code4luck
 
 # 3️⃣ Others
-# https://github.com/lujiarui，蛋白质构象
+# https://github.com/lujiarui，蛋白质构象，蛋白质设计
 lujiarui
 
 # https://github.com/ChenDdon，药物发现、表征学习
@@ -73,3 +79,6 @@ EDAPINENUT
 
 # https://github.com/QizhiPei，蛋白质互作，蛋白质设计
 QizhiPei
+
+# https://github.com/thematrixmaster，蛋白质设计
+thematrixmaster
