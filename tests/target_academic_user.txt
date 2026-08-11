@@ -2,22 +2,27 @@
 # For academic (后续可以拆分多个list独立)
 #######################################
 
+# 1️⃣ holehouse lab
 # https://github.com/alexholehouse，idr核心组
 alexholehouse
 
-# https://github.com/Junjie-Zhu，idr
-Junjie-Zhu
-
-# https://github.com/HFChenLab，idr、蛋白质互作、同上组
+# 2️⃣ Chenlab
+# https://github.com/HFChenLab，idr、蛋白质构象、力场设计
 HFChenLab
 
-# https://github.com/sirius777coder，蛋白质设计、结构
+# https://github.com/Junjie-Zhu，idr构象、蛋白质互作
+Junjie-Zhu
+
+# https://github.com/sirius777coder，蛋白质设计、结构生成、语言模型
 sirius777coder
+
+# https://github.com/Barakhsaana，RNA设计、力场设计，构象
+Barakhsaana
 
 # https://github.com/Zuricho，蛋白质设计、结构
 Zuricho
 
-# https://github.com/Immortals-33，蛋白质设计、结构
+# https://github.com/Immortals-33，蛋白质设计、结构生成
 Immortals-33
 
 # https://github.com/lujiarui，蛋白质构象
@@ -41,3 +46,5 @@ prokia
 # https://github.com/Gonglab-THU，蛋白质结构，MD
 Gonglab-THU
 
+# https://github.com/meneshail，蛋白质设计、生成
+meneshail
