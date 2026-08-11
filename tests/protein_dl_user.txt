@@ -60,10 +60,17 @@ xtanh
 # https://github.com/wangwrx，蛋白质互作，蛋白质设计
 wangwrx
 
+
+# 4️⃣ Shaolab（邵文广）
+# https://life.sjtu.edu.cn/teacher/shaowenguang
+
+# https://github.com/shaowenguang
+
+
 #######################################
 # SJTU 张江+电院
 #######################################
-# 3️⃣ Honglab（洪亮）
+# 5️⃣ Honglab（洪亮）
 # https://ins.sjtu.edu.cn/people/lhong/index.html
 
 # https://github.com/tyang816，蛋白质设计、功能预测、语言模型
@@ -84,7 +91,7 @@ riacd
 # https://github.com/terry-r123，蛋白质/核酸bench
 terry-r123
 
-# 4️⃣ Others
+# 6️⃣ Others
 # https://github.com/lujiarui，蛋白质构象，蛋白质设计
 lujiarui
 
