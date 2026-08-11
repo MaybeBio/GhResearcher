@@ -91,7 +91,13 @@ Whether you want to track a specific expert's "feed", monitor the activities of 
    ```
 
 ### Install GhResearcher
-Clone the repository and install it via `pip`:
+
+We recommend installing GhResearcher via `pip` for simplicity:
+```bash
+pip install ghresearcher
+```
+
+Or clone the repository and install it via `pip`:
 ```bash
 git clone https://github.com/MaybeBio/GhResearcher.git
 cd GhResearcher

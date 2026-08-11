@@ -1,21 +1,35 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
 
 [project]
 name = "ghresearcher"
-version = "0.1.0"
+dynamic = ["version"] # v0.1.0
 authors = [
-  {name = "Joe Hoye Dow", email = "luxunisgod123@gmail.com"}
-  ] 
+  { name = "Joe Hoye Dow", email = "luxunisgod123@gmail.com" }
+]
 description = "A GitHub Code & Repo Analysis CLI for Researchers"
 readme = "README.md"
+requires-python = ">=3.8"
 license = "GPL-3.0"
 license-files = ["LICENSE"]
-keywords = ["github", "CLI", "github monitor", "github parse", "github search", "code discovery", "trending"]
+keywords = ["github", "CLI", "github-monitor", "github-parse", "github-search", "code-discovery", "trending", "github-api", "open-source", "research", "repository-analysis", "code-analysis"]
 
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Environment :: Console",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Utilities"
+]
 
-requires-python = ">=3.8"
 dependencies = [
     "typer>=0.25.0",
     "rich>=15.0.0",
@@ -23,7 +37,17 @@ dependencies = [
     "PyYAML>=6.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/MaybeBio/GhResearcher"
+Repository = "https://github.com/MaybeBio/GhResearcher"
+Issues = "https://github.com/MaybeBio/GhResearcher/issues"
+
 [project.scripts]
-# src 里面的包，直接写包名，不要加 src.
 ghresearcher = "ghresearcher.cli:app"
- 
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ghresearcher"]
+
+[tool.hatch.version]
+# modify version information here
+path = "src/ghresearcher/__init__.py"

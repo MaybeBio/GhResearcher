@@ -23,7 +23,8 @@
       - [批量订阅监控](#批量订阅监控)
       - [详尽的 Commit 展示 (`--expand-commits`)](#详尽的-commit-展示---expand-commits)
     - [2. 解析仓库上下文 (`parse`)](#2-解析仓库上下文-parse)
-  - [高级搜索语法（GitHub）](#高级搜索语法github)
+    - [3. 多领域高级搜索 (`search`)](#3-多领域高级搜索-search)
+  - [😄 Todo](#-todo)
 
 
 ## 📖 简介 / Introduction
@@ -85,7 +86,13 @@
    ```
 
 ### 安装 GhResearcher
-克隆此仓库并使用 `pip` 进行本地安装：
+
+优先推荐使用 `pip` 进行安装：
+```bash
+pip install ghresearcher
+```
+
+或者克隆此仓库从源码安装：
 ```bash
 git clone https://github.com/MaybeBio/GhResearcher.git
 cd GhResearcher
@@ -949,3 +956,8 @@ visibility: "public"
 - **参考资料:** 想深究更详尽的 Qualifiers 映射支持表，可直接翻阅仓库 `docs/` 下收集的 GitHub 官方手册 (`docs_github_com_en_search-github_*`)。
 
 
+## 😄 Todo
+
+- [ ] `monitor`/`parse` 命令基本上没问题，但 `search` 命令还需要进一步测试和优化，尤其是 YAML 配置的解析和 CLI 参数覆盖逻辑，需要确保在各种组合下都能正确工作，以及在操作上尽可能比 `gh search` 更加简洁和易用
+- [ ] README 文档暂时只更新中文，后续升级同步更进
+- [ ] 对于`parse`功能的进一步拓展，对于仓库解析，也许可以集成和借鉴一些现有的代码分析工具，提供更丰富的解析结果，比如代码依赖关系图、函数调用图、AST分析等 

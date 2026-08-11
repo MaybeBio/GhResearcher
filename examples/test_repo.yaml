@@ -1,0 +1,34 @@
+item_type: repos
+query: "machine learning"
+
+# Result Controls
+limit: 30
+sort: stars
+order: desc
+
+# Boolean Flags
+archived: false
+# draft: null (Not applicable to repos)
+
+# Filter Qualifiers
+language: python
+topic: deep-learning
+owner: MaybeBio
+match: description
+created: ">=2023-01-01"
+followers: ">=5"
+forks: ">=10"
+good_first_issues: ">=5"
+help_wanted_issues: ">=10"
+include_forks: "false" # false, true, or only
+license: "mit"
+number_topics: ">=2"
+size: "5000..10000"
+stars: ">=100"
+updated: ">=2023-01-01"
+visibility: "public"
+
+# Formatting Options
+# json: ["id", "name", "owner", "stargazersCount", "description"]
+# jq: ".[] | .name"
+# template: "{{.name}}"
