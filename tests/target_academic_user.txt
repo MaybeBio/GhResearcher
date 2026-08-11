@@ -28,6 +28,7 @@ Immortals-33
 # https://github.com/lujiarui，蛋白质构象
 lujiarui
 
+# 3️⃣ Others
 # https://github.com/ChenDdon，药物发现、表征学习
 ChenDdon
 
@@ -48,3 +49,15 @@ Gonglab-THU
 
 # https://github.com/meneshail，蛋白质设计、生成
 meneshail
+
+# https://github.com/xinshi-chen，蛋白质设计，结构预测
+xinshi-chen
+
+# https://github.com/amyxlu，蛋白质生成，embedding
+amyxlu
+
+# https://github.com/LirongWu，蛋白质互作，蛋白质设计
+LirongWu
+
+# https://github.com/OdinZhang，蛋白质设计
+OdinZhang
