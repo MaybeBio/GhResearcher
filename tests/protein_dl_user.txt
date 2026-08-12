@@ -91,6 +91,9 @@ riacd
 # https://github.com/terry-r123，蛋白质/核酸bench
 terry-r123
 
+# https://github.com/bzho3923，蛋白质设计
+bzho3923
+
 # 6️⃣ Others
 # https://github.com/lujiarui，蛋白质构象，蛋白质设计
 lujiarui
@@ -136,3 +139,30 @@ QizhiPei
 
 # https://github.com/thematrixmaster，蛋白质设计
 thematrixmaster
+
+# https://github.com/zaixizhang，蛋白质设计
+zaixizhang
+
+# https://github.com/pascalnotin，蛋白质设计
+pascalnotin
+
+# https://github.com/jsunn-y，蛋白质优化，酶
+jsunn-y
+
+# https://github.com/Leo-T-Zang，蛋白质互作，蛋白质-DNA互作
+Leo-T-Zang
+
+# https://github.com/WillHua127，蛋白质设计，酶设计
+WillHua127
+
+# https://github.com/wenjiegroup，蛋白质互作，功能，突变
+wenjiegroup
+
+# https://github.com/Shenggan，蛋白质设计，结构预测
+https://github.com/Shenggan
+
+# https://github.com/yangnianzu0515，蛋白质设计
+yangnianzu0515，蛋白质设计
+
+# https://github.com/chao1224，蛋白质表征，蛋白质设计
+chao1224
