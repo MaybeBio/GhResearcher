@@ -1028,10 +1028,13 @@ ghfollow() {
 │   └─142231_past3days.log
 └─20260814/
     └─090000_past1days.log
-
-
-
 ```
+
+- crontab/systemd 定时任务：可以将上述 shell 函数通过 crontab 或 systemd 定时执行，自动获取动态并保存日志（crontab/systemd timer）
+- tmux/screen持久会话，定时打印结果到常驻终端窗口：上一条方案crontab和systemd 本身不能直接输出到交互shell终端，是后台守护进程，有自己独立会话，输出只能写文件然后再事后看，没法直接打印到我们当前ssh终端屏幕中。如果真要实现比如说`9点直接输出在shell终端`，就需要在定时任务中调用 `tmux` 或 `screen` 来实现。具体做法是：在定时任务中执行一个 `tmux send-keys` 命令，将我们上面定义的 shell 函数命令发送到指定的 `tmux` 会话中去执行，这样随时接入tmux窗口，就能在当前终端看到输出了
+- 既要定时执行又要Git仓库持久化存储：最好的方法就是用github actions，直接在github actions中写一个workflow，定时执行上述命令，并将输出结果保存到仓库中，这样就可以实现既定时执行又有持久化存储的效果
+
+> 总而言之，目前我个人的做法是：本地简易执行即可，不需要定时操作记录（bashrc或zshrc中封装个函数即可）；要做长期化的定时任务，重点在github actions
 
 ## 😄 Todo
 
