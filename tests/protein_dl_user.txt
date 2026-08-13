@@ -159,10 +159,10 @@ WillHua127
 wenjiegroup
 
 # https://github.com/Shenggan，蛋白质设计，结构预测
-https://github.com/Shenggan
+Shenggan
 
 # https://github.com/yangnianzu0515，蛋白质设计
-yangnianzu0515，蛋白质设计
+yangnianzu0515
 
 # https://github.com/chao1224，蛋白质表征，蛋白质设计
 chao1224
