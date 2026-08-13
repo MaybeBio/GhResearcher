@@ -1,110 +1,53 @@
 #######################################
 # For academic (后续可以拆分多个list独立)
-# 圈子 instead of people
 #######################################
 
-# 1️⃣ holehouse lab
-# https://github.com/alexholehouse，idr核心组
+# https://github.com/alexholehouse
 alexholehouse
 
-# 2️⃣ Chenlab（陈海峰）
-# https://life.sjtu.edu.cn/teacher/HaifengChen
-
-# https://github.com/HFChenLab，idr、蛋白质构象、力场设计
-HFChenLab
-
-# https://github.com/Junjie-Zhu，idr构象、蛋白质互作
-Junjie-Zhu
-
-# https://github.com/sirius777coder，蛋白质设计、结构生成、语言模型
-sirius777coder
-
-# https://github.com/Barakhsaana，RNA设计、力场设计，构象
-Barakhsaana
-
-# https://github.com/Zuricho，蛋白质设计、结构
-Zuricho
-
-# https://github.com/Immortals-33，蛋白质设计、结构生成
-Immortals-33
-
-# https://github.com/weitinging，抗体设计
-weitinging
-
-# https://github.com/ji-xiaoyue
-ji-xiaoyue
-
-# https://github.com/Zirui-Fan，蛋白质设计，结构生成，分子动力学
-Zirui-Fan
-
-# https://github.com/borrytod
-borrytod
-
-# 3️⃣ Honglab（洪亮）
-# https://ins.sjtu.edu.cn/people/lhong/index.html
-
-# https://github.com/tyang816，蛋白质设计、功能预测、语言模型
-tyang816
-
-# https://github.com/mingchen-li，蛋白质学习，bench
-mingchen-li
-
-# https://github.com/code4luck，蛋白质互作，多模态
-code4luck
-
-# https://github.com/zy-zhou，蛋白质互作，多模态
-zy-zhou
-
-# https://github.com/riacd，蛋白质bench
-riacd
-
-# https://github.com/terry-r123，蛋白质/核酸bench
-terry-r123
-
-# 4️⃣ Others
-# https://github.com/lujiarui，蛋白质构象，蛋白质设计
+# https://github.com/lujiarui
 lujiarui
 
-# https://github.com/ChenDdon，药物发现、表征学习
+# https://github.com/ChenDdon
 ChenDdon
 
-# https://github.com/AspirinCode，药物、蛋白质互作
+# https://github.com/AspirinCode
 AspirinCode
 
-# https://github.com/bjing2016，蛋白质设计、分子模拟
+# https://github.com/bjing2016
 bjing2016
 
-# https://github.com/tyang816，蛋白质互作
+# https://github.com/tyang816
 tyang816
 
-# https://github.com/prokia，药物设计
+# https://github.com/prokia
 prokia
 
-# https://github.com/Gonglab-THU，蛋白质结构，MD
+# https://github.com/Gonglab-THU
 Gonglab-THU
 
-# https://github.com/meneshail，蛋白质设计、生成
+# https://github.com/meneshail
 meneshail
 
-# https://github.com/xinshi-chen，蛋白质设计，结构预测
+# https://github.com/xinshi-chen
 xinshi-chen
 
-# https://github.com/amyxlu，蛋白质生成，embedding
+# https://github.com/amyxlu
 amyxlu
 
-# https://github.com/LirongWu，蛋白质互作，蛋白质设计
+# https://github.com/LirongWu
 LirongWu
 
-# https://github.com/OdinZhang，蛋白质设计
+# https://github.com/OdinZhang
 OdinZhang
 
-# https://github.com/EDAPINENUT，蛋白质设计
+# https://github.com/EDAPINENUT
 EDAPINENUT
 
-# https://github.com/QizhiPei，蛋白质互作，蛋白质设计
+# https://github.com/QizhiPei
 QizhiPei
 
-# https://github.com/thematrixmaster，蛋白质设计
+# https://github.com/thematrixmaster
 thematrixmaster
 
 
