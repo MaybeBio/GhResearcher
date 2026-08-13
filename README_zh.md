@@ -24,6 +24,7 @@
       - [详尽的 Commit 展示 (`--expand-commits`)](#详尽的-commit-展示---expand-commits)
     - [2. 解析仓库上下文 (`parse`)](#2-解析仓库上下文-parse)
     - [3. 多领域高级搜索 (`search`)](#3-多领域高级搜索-search)
+  - [⏰ 动态更新自动化](#动态更新自动化)
   - [😄 Todo](#-todo)
 
 
@@ -955,6 +956,82 @@ visibility: "public"
 - **域边界差异:** 不同搜索类型（item_type）可用的过滤器并不通用。例如 `--topic` 仅能查 `repos`，而 `--extension` 仅能查 `code`。
 - **参考资料:** 想深究更详尽的 Qualifiers 映射支持表，可直接翻阅仓库 `docs/` 下收集的 GitHub 官方手册 (`docs_github_com_en_search-github_*`)。
 
+
+## ⏰ 动态更新自动化
+
+此处以 `monitor` 命令为例，展示如何将 GhResearcher 的输出结果自动化地推送给你：
+
+就像我们前面说的那样，我有一些目标用户和组织，我想每天都能获取他们的最新动态，尤其是他们关注的内容（文件、命令如下）。这个如果能自动化地每天获取就太好了，就像刷朋友圈一样，不至于获取信息还需要我去手动操作。
+
+```shell 
+# 你可以把输入文件改成你的目标文件
+
+# 昨天到今天关注用户的动态事件
+ghresearcher monitor -f /data2/GhResearcher/tests/target_academic_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits
+
+# 昨天到今天关注用户的动态事件（包含接收事件，这个输出一般会很长）
+ghresearcher monitor -f /data2/GhResearcher/tests/target_academic_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) -r --expand-commits
+
+# 昨天到今天关注组织的动态事件
+ghresearcher monitor -f /data2/GhResearcher/tests/target_org.txt --since $(date -d "1 day ago" +%Y-%m-%d) --org --expand-commits
+```
+
+
+鉴于我会经常远程推送更新上述用户和组织名单（就像朋友圈扩圈一样），所以本地执行的1个简易命令如下
+```bash
+curl -f -o protein_dl_user.txt https://raw.githubusercontent.com/MaybeBio/GhResearcher/refs/heads/main/tests/protein_dl_user.txt && ghresearcher monitor -f protein_dl_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits && rm -f protein_dl_user.txt
+```
+
+> ⚠️ `ghresearcher monitor -f` **暂时设计只能接收磁盘上的文件路径，不能直接接收管道输入**
+
+
+- alias 固定命令：能够将上述命令写入到 `~/.bashrc` 或 `~/.zshrc` 中，形成一个固定的别名命令，方便每天执行，但处理不了位置参数，假如哪一天我想查看前两天的动态，就需要手动修改命令中的 `--since` 参数
+- 封装成1个shell函数，能够接受未知参数，样可以写入到 `~/.bashrc` 或 `~/.zshrc` 中。同时我们可以选择输出保存为日志，方便回看热点动态。示例如下：
+
+```bash
+ghfollow() {
+    # 默认天数回溯1
+    local days=1
+    # 传参类似 ghfollw -2, 代表回溯2天
+    # 只要传入参数，就会覆盖默认值，解析出2天这种
+    if [[ $# -ge 1 ]]; then
+        days="${1#-}"
+    fi
+
+    # 存几个变量，/tmp中的唯一临时文件，后续删除
+    local tmp_raw=$(mktemp)
+    local log_dir="$HOME/ghfollow_log"
+    
+    # 日志存档形式，什么时候记录的、存的是什么时候的信息
+    mkdir -p "${log_dir}"
+    local date_folder=$(date +%Y%m%d)
+    local target_log_dir="${log_dir}/${date_folder}"
+    mkdir -p "${target_log_dir}"
+    # 时分秒到位，同一天可以多次运行，当然本身gh输出就是有时间戳的，不记录时间其实也没有多少问题
+    # $HOME/ghfollow_log/2026-08-13/090000_past1days.log
+    local logfile="${target_log_dir}/$(date +%H%M%S)_past${days}days.log"
+
+    # 执行命令并保存日志
+    curl -f -o "${tmp_raw}" https://raw.githubusercontent.com/MaybeBio/GhResearcher/refs/heads/main/tests/protein_dl_user.txt && \
+    ghresearcher monitor -f "${tmp_raw}" --since "$(date -d "${days} day ago" +%Y-%m-%d)" --expand-commits 2>&1 | tee "${logfile}"
+
+    rm -f "${tmp_raw}"
+    echo "✅日志已保存：${logfile}"
+}
+```
+
+大概输出结构就是:
+```text 
+~/ghfollow_log/
+├─20260813/
+│   ├─090000_past1days.log
+│   └─142231_past3days.log
+└─20260814/
+    └─090000_past1days.log
+
+
+
+```
 
 ## 😄 Todo
 
