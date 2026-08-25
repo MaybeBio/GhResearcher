@@ -1,5 +1,6 @@
 import typer
 import os
+import sys
 from pathlib import Path
 from rich.console import Console
 from typing import *
@@ -11,7 +12,7 @@ from .scraper import build_parse_text, build_parse_view, build_source_catalog_te
 from .searcher import search_github
 
 app = typer.Typer(help="GhResearcher: GitHub Code & Repo Analysis CLI")
-console = Console()
+console = Console(soft_wrap=not sys.stdout.isatty())
 
 @app.callback()
 def main():

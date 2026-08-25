@@ -1,8 +1,9 @@
 from typing import *
+import sys
 from rich.console import Console
 from .gh_client import run_gh_command
 
-console = Console()
+console = Console(soft_wrap=not sys.stdout.isatty())
 
 def search_github(item_type: str, query: str, config: dict):
     """
