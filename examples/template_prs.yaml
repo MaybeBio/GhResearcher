@@ -1,23 +1,38 @@
+# ── gh search prs ──────────────────────────────────────────────────
+# Full parameter reference:  gh search prs --help
+# GitHub docs: https://docs.github.com/search-github/searching-on-github/searching-issues-and-pull-requests
+# ──────────────────────────────────────────────────────────────────
+
 item_type: prs
 query: "fix memory leak is:merged"
 
-# Result Controls
+# ── Result Controls ───────────────────────────────────────────────
 limit: 30
-sort: updated
-order: desc
+sort: updated                # comments | reactions | reactions-+1 | reactions--1 | reactions-smile | reactions-thinking_face | reactions-heart | reactions-tada | interactions | created | updated
+order: desc                  # asc | desc
 
-# Boolean Flags
-archived: false
+# ── Output / formatting ───────────────────────────────────────────
+# web: true                  # Open search in browser
+# json: ["id", "title", "state", "url"]
+# jq: ".[] | .title"
+# template: "{{.title}}"
+
+# ── Boolean flags ─────────────────────────────────────────────────
+archived: false              # true | false
 draft: false
 locked: false
 merged: true
+no_assignee: false
+no_label: false
+no_milestone: false
+no_project: false
 
-# Filter Qualifiers
+# ── Filter qualifiers ─────────────────────────────────────────────
 app: "some-app"
 assignee: "MaybeBio"
 author: "MaybeBio"
 base: "main"
-checks: "success" # pending, success, failure
+checks: "success"            # pending | success | failure
 closed: ">=2023-01-01"
 commenter: "MaybeBio"
 comments: ">=5"
@@ -27,27 +42,18 @@ interactions: ">=10"
 involves: "MaybeBio"
 label: "bug"
 language: cpp
-match: body
+match: body                  # title | body | comments
 mentions: "MaybeBio"
 merged_at: ">=2023-01-01"
 milestone: "v1.0"
-no_assignee: false
-no_label: false
-no_milestone: false
-no_project: false
 owner: microsoft
 project: "microsoft/1"
 reactions: ">=5"
 repo: microsoft/terminal
-review: "approved" # none, required, approved, changes_requested
+review: "approved"           # none | required | approved | changes_requested
 review_requested: "MaybeBio"
 reviewed_by: "MaybeBio"
-state: "closed"
+state: "closed"              # open | closed
 team_mentions: "my-team"
 updated: ">=2023-01-01"
-visibility: "public"
-
-# Formatting Options
-# json: ["id", "title", "state", "url"]
-# jq: ".[] | .title"
-# template: "{{.title}}"
+visibility: "public"         # public | private | internal

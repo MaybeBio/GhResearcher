@@ -1,34 +1,39 @@
+# ── gh search repos ──────────────────────────────────────────────
+# Full parameter reference:  gh search repos --help
+# GitHub docs: https://docs.github.com/search-github/searching-on-github/searching-for-repositories
+# ──────────────────────────────────────────────────────────────────
+
 item_type: repos
 query: "machine learning"
 
-# Result Controls
+# ── Result Controls ───────────────────────────────────────────────
 limit: 30
-sort: stars
-order: desc
+sort: stars                  # forks | help-wanted-issues | stars | updated
+order: desc                  # asc | desc
 
-# Boolean Flags
-archived: false
-# draft: null (Not applicable to repos)
+# ── Output / formatting ───────────────────────────────────────────
+# web: true                  # Open search in browser
+# json: ["id", "name", "owner", "stargazersCount", "description"]
+# jq: ".[] | .name"
+# template: "{{.name}}"
 
-# Filter Qualifiers
+# ── Boolean flags ─────────────────────────────────────────────────
+archived: false              # true | false
+
+# ── Filter qualifiers ─────────────────────────────────────────────
 language: python
 topic: deep-learning
 owner: MaybeBio
-match: description
+match: description           # name | description | readme
 created: ">=2023-01-01"
 followers: ">=5"
 forks: ">=10"
 good_first_issues: ">=5"
 help_wanted_issues: ">=10"
-include_forks: "false" # false, true, or only
+include_forks: "false"       # false | true | only
 license: "mit"
 number_topics: ">=2"
 size: "5000..10000"
 stars: ">=100"
 updated: ">=2023-01-01"
-visibility: "public"
-
-# Formatting Options
-# json: ["id", "name", "owner", "stargazersCount", "description"]
-# jq: ".[] | .name"
-# template: "{{.name}}"
+visibility: "public"         # public | private | internal

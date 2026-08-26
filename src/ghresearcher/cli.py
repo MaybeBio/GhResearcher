@@ -220,54 +220,166 @@ def search(
     item_type: Optional[str] = typer.Argument(None, help="Type to search: repos, code, issues, prs, commits"),
     query: Optional[str] = typer.Argument(None, help="The search query"),
     config: Optional[Path] = typer.Option(None, "--config", "-c", help="Path to YAML search config file"),
-    # Common CLI overrides
-    limit: int = typer.Option(30, "--limit", "-l", help="Maximum results"),
+    # ── Output / formatting ──
+    web: Optional[bool] = typer.Option(None, "--web", "-w", help="Open the search query in the web browser"),
+    json: Optional[str] = typer.Option(None, "--json", help="Output JSON with the specified fields (comma-separated)"),
+    jq: Optional[str] = typer.Option(None, "--jq", help="Filter JSON output using a jq expression"),
+    template: Optional[str] = typer.Option(None, "--template", help="Format JSON output using a Go template"),
+    # ── Controls ──
+    limit: Optional[int] = typer.Option(None, "--limit", "-l", help="Maximum number of results [default: 30]"),
     sort: Optional[str] = typer.Option(None, "--sort", "-s", help="Sort criteria"),
-    order: Optional[str] = typer.Option(None, "--order", "-O", help="Order (asc/desc)")
+    order: Optional[str] = typer.Option(None, "--order", "-O", help="Order of results: asc|desc"),
+    # ── Common filters ──
+    owner: Optional[str] = typer.Option(None, "--owner", "-o", help="Filter on repository owner"),
+    repo: Optional[str] = typer.Option(None, "--repo", "-r", help="Filter on repository (owner/repo)"),
+    language: Optional[str] = typer.Option(None, "--language", "-L", help="Filter by programming language"),
+    visibility: Optional[str] = typer.Option(None, "--visibility", help="Filter by visibility: public|private|internal"),
+    match: Optional[str] = typer.Option(None, "--match", help="Restrict search to specific field"),
+    # ── Repository filters ──
+    topic: Optional[str] = typer.Option(None, "--topic", "-t", help="Filter on repository topic"),
+    license: Optional[str] = typer.Option(None, "--license", help="Filter by license type"),
+    stars: Optional[str] = typer.Option(None, "--stars", help="Filter on number of stars (e.g. '>=100')"),
+    forks: Optional[str] = typer.Option(None, "--forks", help="Filter on number of forks (e.g. '>=10')"),
+    size: Optional[str] = typer.Option(None, "--size", help="Filter on size range in KB (e.g. '5000..10000')"),
+    created: Optional[str] = typer.Option(None, "--created", help="Filter on created date (e.g. '>=2023-01-01')"),
+    updated: Optional[str] = typer.Option(None, "--updated", help="Filter on last updated date"),
+    archived: Optional[str] = typer.Option(None, "--archived", help="Filter based on archived state: true|false"),
+    include_forks: Optional[str] = typer.Option(None, "--include-forks", help="Include forks: false|true|only"),
+    good_first_issues: Optional[str] = typer.Option(None, "--good-first-issues", help="Filter on number of 'good first issue' labels"),
+    help_wanted_issues: Optional[str] = typer.Option(None, "--help-wanted-issues", help="Filter on number of 'help wanted' labels"),
+    number_topics: Optional[str] = typer.Option(None, "--number-topics", help="Filter on number of topics"),
+    followers: Optional[str] = typer.Option(None, "--followers", help="Filter on number of followers"),
+    # ── Code filters ──
+    extension: Optional[str] = typer.Option(None, "--extension", "-e", help="Filter on file extension"),
+    filename: Optional[str] = typer.Option(None, "--filename", "-f", help="Filter on filename"),
+    # ── Issue / PR filters ──
+    label: Optional[str] = typer.Option(None, "--label", help="Filter on label"),
+    state: Optional[str] = typer.Option(None, "--state", help="Filter by state: open|closed"),
+    author: Optional[str] = typer.Option(None, "--author", help="Filter by author"),
+    assignee: Optional[str] = typer.Option(None, "--assignee", help="Filter by assignee"),
+    mentions: Optional[str] = typer.Option(None, "--mentions", help="Filter by @mentions"),
+    milestone: Optional[str] = typer.Option(None, "--milestone", help="Filter by milestone title"),
+    comments: Optional[str] = typer.Option(None, "--comments", help="Filter on number of comments (e.g. '>100')"),
+    no_assignee: Optional[bool] = typer.Option(None, "--no-assignee", help="Filter on missing assignee"),
+    no_label: Optional[bool] = typer.Option(None, "--no-label", help="Filter on missing label"),
+    no_milestone: Optional[bool] = typer.Option(None, "--no-milestone", help="Filter on missing milestone"),
+    no_project: Optional[bool] = typer.Option(None, "--no-project", help="Filter on missing project"),
+    include_prs: Optional[bool] = typer.Option(None, "--include-prs", help="Include pull requests in results"),
+    locked: Optional[bool] = typer.Option(None, "--locked", help="Filter on locked conversation status"),
+    closed: Optional[str] = typer.Option(None, "--closed", help="Filter on closed date (e.g. '>=2023-01-01')"),
+    interactions: Optional[str] = typer.Option(None, "--interactions", help="Filter on number of reactions and comments"),
+    reactions: Optional[str] = typer.Option(None, "--reactions", help="Filter on number of reactions"),
+    app: Optional[str] = typer.Option(None, "--app", help="Filter by GitHub App author"),
+    commenter: Optional[str] = typer.Option(None, "--commenter", help="Filter based on comments by user"),
+    involves: Optional[str] = typer.Option(None, "--involves", help="Filter based on involvement of user"),
+    project: Optional[str] = typer.Option(None, "--project", help="Filter on project board (owner/number)"),
+    team_mentions: Optional[str] = typer.Option(None, "--team-mentions", help="Filter based on team mentions"),
+    # ── PR-only filters ──
+    draft: Optional[bool] = typer.Option(None, "--draft", help="Filter based on draft state"),
+    merged: Optional[bool] = typer.Option(None, "--merged", help="Filter based on merged state"),
+    base: Optional[str] = typer.Option(None, "--base", "-B", help="Filter on base branch name"),
+    head: Optional[str] = typer.Option(None, "--head", "-H", help="Filter on head branch name"),
+    checks: Optional[str] = typer.Option(None, "--checks", help="Filter by check status: pending|success|failure"),
+    review: Optional[str] = typer.Option(None, "--review", help="Filter by review status: none|required|approved|changes_requested"),
+    review_requested: Optional[str] = typer.Option(None, "--review-requested", help="Filter on requested reviewer"),
+    reviewed_by: Optional[str] = typer.Option(None, "--reviewed-by", help="Filter on user who reviewed"),
+    merged_at: Optional[str] = typer.Option(None, "--merged-at", help="Filter on merged date (e.g. '>=2023-01-01')"),
+    # ── Commit filters ──
+    committer: Optional[str] = typer.Option(None, "--committer", help="Filter by committer"),
+    hash: Optional[str] = typer.Option(None, "--hash", help="Filter by commit hash"),
+    merge: Optional[bool] = typer.Option(None, "--merge", help="Filter on merge commits"),
+    author_date: Optional[str] = typer.Option(None, "--author-date", help="Filter on authored date"),
+    author_email: Optional[str] = typer.Option(None, "--author-email", help="Filter on author email"),
+    author_name: Optional[str] = typer.Option(None, "--author-name", help="Filter on author name"),
+    committer_date: Optional[str] = typer.Option(None, "--committer-date", help="Filter on committed date"),
+    committer_email: Optional[str] = typer.Option(None, "--committer-email", help="Filter on committer email"),
+    committer_name: Optional[str] = typer.Option(None, "--committer-name", help="Filter on committer name"),
+    parent: Optional[str] = typer.Option(None, "--parent", help="Filter by parent hash"),
+    tree: Optional[str] = typer.Option(None, "--tree", help="Filter by tree hash"),
 ):
     """
-    Search GitHub across multi-domains (repos, code, issues) with full query support.
-    Accepts command line arguments or a structured YAML config profile.
+    Search GitHub across multi-domains (repos, code, issues, prs, commits) with full query support.
+
+    Accepts command line arguments, a structured YAML config profile, or a combination of both.
+    CLI flags always take precedence over YAML config values.
+
+    Examples:
+        ghresearcher search repos "LLM agent" -L Python -t artificial-intelligence -s stars -l 20
+        ghresearcher search code "TODO" -r MaybeBio/GhResearcher -f "*.py" -e py
+        ghresearcher search prs "fix bug" -o microsoft --merged
+        ghresearcher search --config examples/search_ai_repos.yaml
     """
-    yaml_data = {}
+    yaml_data: dict = {}
     if config:
         try:
-            import yaml
+            import yaml as _yaml
         except ImportError:
             console.print("[red]Error: PyYAML not found! Please run 'pip install PyYAML'.[/red]")
             raise typer.Exit(1)
-            
+
         if not config.is_file():
             console.print(f"[red]Error: Configuration file not found at {config}[/red]")
             raise typer.Exit(1)
-            
+
         with open(config, "r", encoding="utf-8") as f:
-            yaml_data = yaml.safe_load(f) or {}
+            yaml_data = _yaml.safe_load(f) or {}
 
-    final_item_type = item_type or yaml_data.get("item_type")
-    final_query = query or yaml_data.get("query")
-    
-    if not final_item_type or not final_query:
-        console.print("[red]Error: Missing required parameters. Please provide 'item_type' and 'query' either via CLI or YAML config.[/red]")
+    # ── Collect CLI overrides ─────────────────────────────────────
+    # Only include parameters explicitly set by the user (non-None).
+    _cli_param_names = [
+        "web", "json", "jq", "template",
+        "limit", "sort", "order",
+        "owner", "repo", "language", "visibility", "match",
+        "topic", "license", "stars", "forks", "size", "created", "updated",
+        "archived", "include_forks", "good_first_issues", "help_wanted_issues",
+        "number_topics", "followers",
+        "extension", "filename",
+        "label", "state", "author", "assignee", "mentions", "milestone",
+        "comments", "no_assignee", "no_label", "no_milestone", "no_project",
+        "include_prs", "locked", "closed", "interactions", "reactions",
+        "app", "commenter", "involves", "project", "team_mentions",
+        "draft", "merged", "base", "head", "checks", "review",
+        "review_requested", "reviewed_by", "merged_at",
+        "committer", "hash", "merge", "author_date", "author_email",
+        "author_name", "committer_date", "committer_email", "committer_name",
+        "parent", "tree",
+    ]
+    cli_overrides: dict = {}
+    _frame = locals()
+    for pn in _cli_param_names:
+        v = _frame.get(pn)
+        if v is not None:
+            cli_overrides[pn] = v
+
+    # ── Merge: YAML base, CLI overrides on top ────────────────────
+    merged: dict = {**yaml_data, **cli_overrides}
+
+    final_item_type = item_type or merged.get("item_type")
+    final_query = query or merged.get("query")
+
+    if not final_item_type:
+        console.print("[red]Error: Missing 'item_type'. Provide as argument or via --config YAML.[/red]")
         raise typer.Exit(1)
-        
-    # CLI options take precedence over yaml_data if explicitly set
-    if limit != 30:
-        yaml_data["limit"] = limit
-    if "limit" not in yaml_data:
-        yaml_data["limit"] = 30
-        
-    if sort:
-        yaml_data["sort"] = sort
-    if order:
-        yaml_data["order"] = order
 
-    console.print(f"[bold blue]Searching {final_item_type} for '{final_query}' " + (f"(via {config.name})" if config else "") + "...[/bold blue]")
+    # query is optional for repos/issues/prs/commits, required for code
+    if not final_query and final_item_type == "code":
+        console.print("[red]Error: 'query' is required for code search.[/red]")
+        raise typer.Exit(1)
+
+    if "limit" not in merged:
+        merged["limit"] = 30
+
+    console.print(
+        f"[bold blue]Searching {final_item_type}"
+        + (f" for '{final_query}'" if final_query else "")
+        + (f" (via {config.name})" if config else "")
+        + "...[/bold blue]"
+    )
     try:
         search_github(
             item_type=final_item_type,
-            query=final_query,
-            config=yaml_data
+            query=final_query or "",
+            config=merged,
         )
     except Exception as e:
         console.print(f"[red]Search failed: {e}[/red]")
