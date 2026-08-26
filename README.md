@@ -35,6 +35,8 @@ A powerful GitHub Code & Repo Analysis CLI for Researchers, designed to track ac
       - [3.7 Practical Scenarios & Examples](#37-practical-scenarios--examples)
       - [3.8 Comprehensive YAML Templates Reference](#38-comprehensive-yaml-templates-reference)
       - [3.9 Tips & Caveats](#39-tips--caveats)
+  - [⏰ Dynamic Update Automation](#dynamic-update-automation)
+  - [😄 Todo](#todo)
   - [⚠️ Limits \& Caveats](#️-limits--caveats)
 
 
@@ -1239,6 +1241,96 @@ visibility: "public"
 - **When `query` is required:** `repos`/`issues`/`prs`/`commits` allow omitting `query` (pure flag filtering), but `code` search requires a `query`.
 - **References:** For the full qualifier-to-flag mapping tables, see the official GitHub manuals collected under `docs/` (`docs_github_com_en_search-github_*`).
 
+
+---
+
+## ⏰ Dynamic Update Automation
+
+Here we use the `monitor` command as an example to show how to push GhResearcher's output to you automatically:
+
+As mentioned earlier, I have some target users and organizations whose latest activity I want to see every day, especially the content they follow (files and commands below). It would be great if this could be fetched automatically every day — like scrolling a social feed — so I don't have to manually run the query each time.
+
+```shell 
+# you can change the input file to your own target file
+
+# yesterday-to-today events of followed users
+ghresearcher monitor -f /data2/GhResearcher/tests/target_academic_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits
+
+# yesterday-to-today events of followed users (including received events; this output is usually very long)
+ghresearcher monitor -f /data2/GhResearcher/tests/target_academic_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) -r --expand-commits
+
+# yesterday-to-today events of followed organizations
+ghresearcher monitor -f /data2/GhResearcher/tests/target_org.txt --since $(date -d "1 day ago" +%Y-%m-%d) --org --expand-commits
+```
+
+
+Since I frequently push updates to the user/organization lists above (like expanding my social circle), here is a single simple command to run locally:
+```bash
+curl -f -o protein_dl_user.txt https://raw.githubusercontent.com/MaybeBio/GhResearcher/refs/heads/main/tests/protein_dl_user.txt && ghresearcher monitor -f protein_dl_user.txt --since $(date -d "1 day ago" +%Y-%m-%d) --expand-commits && rm -f protein_dl_user.txt
+```
+
+> ⚠️ `ghresearcher monitor -f` **currently only accepts a file path on disk, not piped input**
+
+
+- **Alias (fixed command):** write the command above into `~/.bashrc` or `~/.zshrc` as a fixed alias for daily use. However, it can't handle positional parameters — if you ever want to look back two days, you'd have to manually edit the `--since` parameter in the command.
+- **Shell function:** wrap it into a shell function that accepts parameters and write it into `~/.bashrc` or `~/.zshrc`. You can also save the output as a log for reviewing hot activity later. Example:
+
+```bash
+ghfollow() {
+    # look back 1 day by default
+    local days=1
+    # pass an argument like `ghfollow -2` to look back 2 days
+    # any argument overrides the default and is parsed into N days
+    if [[ $# -ge 1 ]]; then
+        days="${1#-}"
+    fi
+
+    # a unique temp file under /tmp, removed afterwards
+    local tmp_raw=$(mktemp)
+    local log_dir="$HOME/ghfollow_log"
+    
+    # archive logs by date: when it was recorded and what period it covers
+    mkdir -p "${log_dir}"
+    local date_folder=$(date +%Y%m%d)
+    local target_log_dir="${log_dir}/${date_folder}"
+    mkdir -p "${target_log_dir}"
+    # down to hour/minute/second so you can run multiple times a day
+    # (though gh output already has timestamps, so time isn't strictly needed)
+    # $HOME/ghfollow_log/2026-08-13/090000_past1days.log
+    local logfile="${target_log_dir}/$(date +%H%M%S)_past${days}days.log"
+
+    # run the command and save the log
+    curl -f -o "${tmp_raw}" https://raw.githubusercontent.com/MaybeBio/GhResearcher/refs/heads/main/tests/protein_dl_user.txt && \
+    ghresearcher monitor -f "${tmp_raw}" --since "$(date -d "${days} day ago" +%Y-%m-%d)" --expand-commits 2>&1 | tee "${logfile}"
+
+    rm -f "${tmp_raw}"
+    echo "✅ log saved: ${logfile}"
+}
+```
+
+The resulting directory structure looks like:
+```text 
+~/ghfollow_log/
+├─20260813/
+│   ├─090000_past1days.log
+│   └─142231_past3days.log
+└─20260814/
+    └─090000_past1days.log
+```
+
+- **crontab / systemd scheduled tasks:** schedule the shell function above via crontab or a systemd timer to fetch activity and save logs automatically.
+- **tmux / screen persistent sessions (print to a resident terminal):** the previous approach (crontab/systemd) can't output directly to an interactive shell — they are background daemons with their own sessions, so output can only be written to a file and reviewed later, not printed live to your current SSH terminal. If you really want output printed in the shell at, say, 9:00 AM, use `tmux` or `screen` from within the scheduled task: run a `tmux send-keys` command that sends the shell function to a designated `tmux` session, so that whenever you attach to that tmux window you see the output in the current terminal.
+- **Scheduled execution + persistent Git storage:** the best approach is GitHub Actions — write a workflow that runs the command above on a schedule and commits the output back to the repository, giving you both scheduled execution and persistent storage.
+
+> In short, my personal approach is: for simple local use, no scheduled recording is needed (just wrap a function in `bashrc`/`zshrc`); for long-term scheduled tasks, GitHub Actions is the key (recommended for persistent records).
+
+## 😄 Todo
+
+- [ ] The `monitor`/`parse` commands are basically solid, but `search` still needs more testing and optimization — especially YAML config parsing and the CLI-overrides-YAML logic, ensuring correct behavior across all combinations, and making it as concise and user-friendly as possible compared to `gh search`.
+- [ ] The README has only been updated in Chinese for now; the English version will be synced in a later update.
+- [ ] Further extend `parse`: for repository parsing, consider integrating or borrowing from existing code-analysis tools to provide richer results, such as dependency graphs, call graphs, AST analysis, etc.
+- [x] Fix the Rich output column-width issue — when output is too long, Rich tables may be truncated or wrapped, hurting readability; prefer one full line per row without wrapping.
+- [ ] Optimize further by publishing/implementing as a `GitHub CLI extension`, so users can install via `gh extension install` without a separate Python environment. See: https://github.com/topics/gh-extension | https://cli.github.com/manual/
 
 ---
 

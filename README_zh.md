@@ -1375,4 +1375,4 @@ ghfollow() {
 - [ ] README 文档暂时只更新中文，后续升级同步更进英文版
 - [ ] 对于`parse`功能的进一步拓展，对于仓库解析，也许可以集成和借鉴一些现有的代码分析工具，提供更丰富的解析结果，比如代码依赖关系图、函数调用图、AST分析等 
 - [x] 修改rich输出 限制列宽的问题，尤其是当输出内容过长时，rich的表格显示可能会被截断或换行，影响可读性，需要进一步优化，最好是一行完整输出不换行
-- [ ] 一些功能的进一步优化，可以考虑以`GitHub CLI extension`的形式发布或实现，让用户可以直接通过`gh extension install`来安装和使用，而不需要额外的Python环境配置，具体参考：https://github.com/topics/gh-extension
+- [ ] 一些功能的进一步优化，可以考虑以`GitHub CLI extension`的形式发布或实现，让用户可以直接通过`gh extension install`来安装和使用，而不需要额外的Python环境配置，具体参考：https://github.com/topics/gh-extension | https://cli.github.com/manual/
