@@ -24,6 +24,15 @@
       - [详尽的 Commit 展示 (`--expand-commits`)](#详尽的-commit-展示---expand-commits)
     - [2. 解析仓库上下文 (`parse`)](#2-解析仓库上下文-parse)
     - [3. 多领域高级搜索 (`search`)](#3-多领域高级搜索-search)
+      - [3.1 命令语法](#31-命令语法)
+      - [3.2 CLI 参数完整速查](#32-cli-参数完整速查)
+      - [3.3 布尔标志的两类写法](#33-布尔标志的两类写法)
+      - [3.4 排序标准 --sort合法取值](#34-排序标准--sort合法取值)
+      - [3.5 声明式 YAML 配置 --config](#35-声明式-yaml-配置---config)
+      - [3.6 内置校验](#36-内置校验)
+      - [3.7 实用场景与配置案例](#37--实用场景与配置案例)
+      - [3.8 各搜索域 YAML 模板全参数详解](#38--各搜索域-yaml-模板全参数详解)
+      - [3.9 提示与注意事项](#39--提示与注意事项)
   - [⏰ 动态更新自动化](#动态更新自动化)
   - [😄 Todo](#-todo)
 
@@ -663,27 +672,273 @@ ghresearcher parse Junjie-Zhu/IDPFold --source --view
 
 ### 3. 多领域高级搜索 (`search`)
 
-在终端内直接使用 GitHub 强大的搜索引擎，跨越代码库、代码片段、Issues 和 PRs 进行数据挖掘。
-GhResearcher 对底层的 `gh search` 进行了高度封装，提供了**声明式搜索模板（Declarative YAML Config）**，让你免受拼接繁长参数词（`--language`, `--topic`, `--extension` 等）的困扰。
+在终端内直接使用 GitHub 强大的搜索引擎，跨越**仓库（repos）、代码（code）、Issue、PR 和提交（commits）**五大数据域进行挖掘。GhResearcher 对底层 `gh search` 做了完整封装，支持两种使用方式，且可自由混用：
 
-#### 命令行基础用法
+1. **命令行直接传参**：适合快速的一次性搜索，所有高频过滤参数都提供短标志。
+2. **声明式 YAML 配置**：适合保存高频、复杂的检索条件，一键复用。
 
-**语法格式:**
+> 当 CLI 参数与 YAML 字段同时出现时，**CLI 参数优先**，会覆盖 YAML 中的对应字段。
+
+#### 3.1 命令语法
+
 ```bash
-ghresearcher search [选项] [搜寻类型] [查询语句]
+ghresearcher search [OPTIONS] [item_type] [query]
 ```
 
-**支持的核心筛选项:**
-- `--limit`, `-l`: 返回结果最大数量（默认：30）。
-- `--sort`, `-s`: 排序标准（如：`stars`, `forks`, `updated`）。
-- `--order`, `-O`: 排序方式（`asc` 正序 或 `desc` 倒序）。
-- `--language`, `-L`: 限定编程语言。
-- `--topic`, `-t`: 限定仓库主题（仅限仓库）。
-- `--extension`, `-e`: 限定文件后缀（仅限代码）。
-- `--filename`, `-f`: 限定包含特定文件名的文件（仅限代码）。
-- `--owner`, `-o` / `--repo`, `-r`: 将搜索范围收窄至特定组织、用户或仓库。
+- `item_type`：搜索类型，取值 `repos` / `code` / `issues` / `prs` / `commits`。若通过 YAML 的 `item_type` 字段指定，此处可省略。
+- `query`：搜索关键词。**`code` 搜索的 `query` 必填**；其余四类（`repos`/`issues`/`prs`/`commits`）的 `query` 可省略，此时可进行纯 flag 过滤，例如：
 
-#### 声明式 YAML 配置 (`--config`)
+```bash
+ghresearcher search repos -o microsoft --visibility public
+```
+
+详细帮助文档:
+```python 
+❯ ghresearcher search --help
+                                                                                                                                                
+ Usage: ghresearcher search [OPTIONS] [item_type] [query]                                                                                       
+                                                                                                                                                
+ Search GitHub across multi-domains (repos, code, issues, prs, commits) with full query support.                                                
+                                                                                                                                                
+ Accepts command line arguments, a structured YAML config profile, or a combination of both.                                                    
+ CLI flags always take precedence over YAML config values.                                                                                      
+                                                                                                                                                
+ Examples:                                                                                                                                      
+     ghresearcher search repos "LLM agent" -L Python -t artificial-intelligence -s stars -l 20                                                  
+     ghresearcher search code "TODO" -r MaybeBio/GhResearcher -f "*.py" -e py                                                                   
+     ghresearcher search prs "fix bug" -o microsoft --merged                                                                                    
+     ghresearcher search --config examples/search_ai_repos.yaml                                                                                 
+                                                                                                                                                
+╭─ Arguments ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│   item_type      <str>  Type to search: repos, code, issues, prs, commits                                                                    │
+│   query          <str>  The search query                                                                                                     │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --config              -c      <path>  Path to YAML search config file                                                                        │
+│ --web                 -w              Open the search query in the web browser                                                               │
+│ --json                        <str>   Output JSON with the specified fields (comma-separated)                                                │
+│ --jq                          <str>   Filter JSON output using a jq expression                                                               │
+│ --template                    <str>   Format JSON output using a Go template                                                                 │
+│ --limit               -l      <int>   Maximum number of results                                                                              │
+│ --sort                -s      <str>   Sort criteria                                                                                          │
+│ --order               -O      <str>   Order of results: asc|desc                                                                             │
+│ --owner               -o      <str>   Filter on repository owner                                                                             │
+│ --repo                -r      <str>   Filter on repository (owner/repo)                                                                      │
+│ --language            -L      <str>   Filter by programming language                                                                         │
+│ --visibility                  <str>   Filter by visibility: public|private|internal                                                          │
+│ --match                       <str>   Restrict search to specific field                                                                      │
+│ --topic               -t      <str>   Filter on repository topic                                                                             │
+│ --license                     <str>   Filter by license type                                                                                 │
+│ --stars                       <str>   Filter on number of stars (e.g. '>=100')                                                               │
+│ --forks                       <str>   Filter on number of forks (e.g. '>=10')                                                                │
+│ --size                        <str>   Filter on size range in KB (e.g. '5000..10000')                                                        │
+│ --created                     <str>   Filter on created date (e.g. '>=2023-01-01')                                                           │
+│ --updated                     <str>   Filter on last updated date                                                                            │
+│ --archived                    <str>   Filter based on archived state: true|false                                                             │
+│ --include-forks               <str>   Include forks: false|true|only                                                                         │
+│ --good-first-issues           <str>   Filter on number of 'good first issue' labels                                                          │
+│ --help-wanted-issues          <str>   Filter on number of 'help wanted' labels                                                               │
+│ --number-topics               <str>   Filter on number of topics                                                                             │
+│ --followers                   <str>   Filter on number of followers                                                                          │
+│ --extension           -e      <str>   Filter on file extension                                                                               │
+│ --filename            -f      <str>   Filter on filename                                                                                     │
+│ --label                       <str>   Filter on label                                                                                        │
+│ --state                       <str>   Filter by state: open|closed                                                                           │
+│ --author                      <str>   Filter by author                                                                                       │
+│ --assignee                    <str>   Filter by assignee                                                                                     │
+│ --mentions                    <str>   Filter by @mentions                                                                                    │
+│ --milestone                   <str>   Filter by milestone title                                                                              │
+│ --comments                    <str>   Filter on number of comments (e.g. '>100')                                                             │
+│ --no-assignee                         Filter on missing assignee                                                                             │
+│ --no-label                            Filter on missing label                                                                                │
+│ --no-milestone                        Filter on missing milestone                                                                            │
+│ --no-project                          Filter on missing project                                                                              │
+│ --include-prs                         Include pull requests in results                                                                       │
+│ --locked                              Filter on locked conversation status                                                                   │
+│ --closed                      <str>   Filter on closed date (e.g. '>=2023-01-01')                                                            │
+│ --interactions                <str>   Filter on number of reactions and comments                                                             │
+│ --reactions                   <str>   Filter on number of reactions                                                                          │
+│ --app                         <str>   Filter by GitHub App author                                                                            │
+│ --commenter                   <str>   Filter based on comments by user                                                                       │
+│ --involves                    <str>   Filter based on involvement of user                                                                    │
+│ --project                     <str>   Filter on project board (owner/number)                                                                 │
+│ --team-mentions               <str>   Filter based on team mentions                                                                          │
+│ --draft                               Filter based on draft state                                                                            │
+│ --merged                              Filter based on merged state                                                                           │
+│ --base                -B      <str>   Filter on base branch name                                                                             │
+│ --head                -H      <str>   Filter on head branch name                                                                             │
+│ --checks                      <str>   Filter by check status: pending|success|failure                                                        │
+│ --review                      <str>   Filter by review status: none|required|approved|changes_requested                                      │
+│ --review-requested            <str>   Filter on requested reviewer                                                                           │
+│ --reviewed-by                 <str>   Filter on user who reviewed                                                                            │
+│ --merged-at                   <str>   Filter on merged date (e.g. '>=2023-01-01')                                                            │
+│ --committer                   <str>   Filter by committer                                                                                    │
+│ --hash                        <str>   Filter by commit hash                                                                                  │
+│ --merge                               Filter on merge commits                                                                                │
+│ --author-date                 <str>   Filter on authored date                                                                                │
+│ --author-email                <str>   Filter on author email                                                                                 │
+│ --author-name                 <str>   Filter on author name                                                                                  │
+│ --committer-date              <str>   Filter on committed date                                                                               │
+│ --committer-email             <str>   Filter on committer email                                                                              │
+│ --committer-name              <str>   Filter on committer name                                                                               │
+│ --parent                      <str>   Filter by parent hash                                                                                  │
+│ --tree                        <str>   Filter by tree hash                                                                                    │
+│ --help                                Show this message and exit.                                                                            │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+```
+
+
+#### 3.2 CLI 参数完整速查
+
+##### 输出与格式化（所有类型通用）
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| `-w` | `--web` | 在浏览器中打开搜索结果页 |
+| — | `--json <fields>` | 以 JSON 输出指定字段（逗号分隔，如 `"name,stargazersCount"`） |
+| — | `--jq <expr>` | 用 jq 表达式过滤 JSON 输出 |
+| — | `--template <tpl>` | 用 Go 模板格式化 JSON 输出 |
+
+##### 结果控制
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| `-l` | `--limit <int>` | 最大返回结果数（默认 `30`） |
+| `-s` | `--sort <str>` | 排序标准（取值因类型而异，见 §3.4；`code` 不支持） |
+| `-O` | `--order <asc\|desc>` | 排序方式（仅当指定 `--sort` 时生效） |
+
+##### 通用过滤
+
+| 短 | 长 | 适用类型 | 说明 |
+|:--|:--|:--|:--|
+| `-o` | `--owner <str>` | 全部 | 限定仓库 owner（组织/用户） |
+| `-r` | `--repo <owner/repo>` | code/issues/prs/commits | 限定具体仓库 |
+| `-L` | `--language <str>` | repos/code/issues/prs | 限定编程语言 |
+| — | `--visibility <str>` | repos/issues/prs/commits | 可见性：`public`/`private`/`internal` |
+| — | `--match <str>` | repos/code/issues/prs | 限定搜索字段（取值见各类型专属说明） |
+
+##### 仓库搜索（`repos`）专属
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| `-t` | `--topic <str>` | 限定仓库主题 |
+| — | `--license <str>` | 按许可证过滤（如 `mit`、`apache-2.0`） |
+| — | `--stars <num>` | 按 star 数过滤（如 `>=100`） |
+| — | `--forks <num>` | 按 fork 数过滤（如 `>=10`） |
+| — | `--size <range>` | 按大小过滤（KB，如 `5000..10000`） |
+| — | `--created <date>` | 按创建日期过滤（如 `>=2023-01-01`） |
+| — | `--updated <date>` | 按更新日期过滤 |
+| — | `--archived <true\|false>` | 按归档状态过滤 |
+| — | `--include-forks <false\|true\|only>` | 是否包含 fork 仓库 |
+| — | `--good-first-issues <num>` | 按 good-first-issue 数量过滤 |
+| — | `--help-wanted-issues <num>` | 按 help-wanted 数量过滤 |
+| — | `--number-topics <num>` | 按主题数量过滤 |
+| — | `--followers <num>` | 按关注者数量过滤 |
+| — | `--match <name\|description\|readme>` | 限定搜索字段 |
+
+##### 代码搜索（`code`）专属
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| `-e` | `--extension <str>` | 限定文件后缀（如 `py`） |
+| `-f` | `--filename <str>` | 限定文件名（支持通配，如 `"*.py"`） |
+| — | `--match <file\|path>` | `file` 匹配内容，`path` 匹配路径 |
+| — | `--size <range>` | 按文件大小过滤（KB） |
+
+> `code` 搜索由 GitHub 传统代码搜索引擎驱动，**不支持 `--sort`/`--order`**；若误传，GhResearcher 会给出警告并忽略它们。
+
+##### Issue / PR 搜索（`issues` / `prs`）通用
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| — | `--label <str>` | 按标签过滤 |
+| — | `--state <open\|closed>` | 按状态过滤 |
+| — | `--author <str>` | 按作者过滤 |
+| — | `--assignee <str>` | 按被分配人过滤 |
+| — | `--mentions <str>` | 按 @提及过滤 |
+| — | `--milestone <str>` | 按里程碑标题过滤 |
+| — | `--comments <num>` | 按评论数过滤（如 `>100`） |
+| — | `--no-assignee` | 仅看无 assignee 的（存在标志） |
+| — | `--no-label` | 仅看无标签的（存在标志） |
+| — | `--no-milestone` | 仅看无里程碑的（存在标志） |
+| — | `--no-project` | 仅看无项目的（存在标志） |
+| — | `--locked` | 按锁定状态过滤（存在标志） |
+| — | `--closed <date>` | 按关闭日期过滤 |
+| — | `--created <date>` | 按创建日期过滤 |
+| — | `--updated <date>` | 按更新日期过滤 |
+| — | `--interactions <num>` | 按互动数（评论+反应）过滤 |
+| — | `--reactions <num>` | 按反应数过滤 |
+| — | `--app <str>` | 按 GitHub App 作者过滤 |
+| — | `--commenter <str>` | 按评论者过滤 |
+| — | `--involves <str>` | 按涉及用户过滤 |
+| — | `--project <owner/number>` | 按项目看板过滤 |
+| — | `--team-mentions <str>` | 按团队提及过滤 |
+| — | `--archived <true\|false>` | 按归档状态过滤 |
+| — | `--match <title\|body\|comments>` | 限定搜索字段 |
+
+##### Issue 搜索（`issues`）专属
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| — | `--include-prs` | 结果中包含 PR（存在标志） |
+
+##### PR 搜索（`prs`）专属
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| — | `--draft` | 按草稿状态过滤（存在标志） |
+| — | `--merged` | 按已合并状态过滤（存在标志） |
+| `-B` | `--base <str>` | 按基础分支名过滤 |
+| `-H` | `--head <str>` | 按 head 分支名过滤 |
+| — | `--checks <pending\|success\|failure>` | 按检查状态过滤 |
+| — | `--review <none\|required\|approved\|changes_requested>` | 按审查状态过滤 |
+| — | `--review-requested <str>` | 按请求的审查人过滤 |
+| — | `--reviewed-by <str>` | 按审查人过滤 |
+| — | `--merged-at <date>` | 按合并日期过滤 |
+
+##### 提交搜索（`commits`）专属
+
+| 短 | 长 | 说明 |
+|:--|:--|:--|
+| — | `--author <str>` | 按作者过滤 |
+| — | `--committer <str>` | 按提交者过滤 |
+| — | `--hash <str>` | 按 commit hash 过滤 |
+| — | `--merge` | 仅看合并提交（存在标志） |
+| — | `--author-date <date>` | 按作者日期过滤 |
+| — | `--author-email <str>` | 按作者邮箱过滤 |
+| — | `--author-name <str>` | 按作者姓名过滤 |
+| — | `--committer-date <date>` | 按提交者日期过滤 |
+| — | `--committer-email <str>` | 按提交者邮箱过滤 |
+| — | `--committer-name <str>` | 按提交者姓名过滤 |
+| — | `--parent <str>` | 按父 commit hash 过滤 |
+| — | `--tree <str>` | 按 tree hash 过滤 |
+
+#### 3.3 布尔标志的两类写法
+
+`gh search` 的布尔型 flag 分两种，GhResearcher 会自动按正确语法转换：
+
+| 类型 | 示例 | CLI 写法 | YAML 写法 | 生成的 gh 参数 |
+|:--|:--|:--|:--|:--|
+| 带值布尔 | `--archived` | `--archived true` / `--archived false` | `archived: false` | `--archived=true` / `--archived=false` |
+| 存在标志 | `--draft` `--merged` `--no-assignee` 等 | 只写 `--draft`（不写即不生效） | `draft: true` 出现 / `draft: false` 省略 | `--draft` |
+
+- **带值布尔**只有 `archived` 一个，它必须带 `true/false`。
+- **存在标志**包括：`web`、`draft`、`merged`、`include-prs`、`locked`、`merge`、`no-assignee`、`no-label`、`no-milestone`、`no-project`。它们只需「出现」即代表真，YAML 中 `false` 会被自动省略。
+
+#### 3.4 排序标准（`--sort`）合法取值
+
+`--sort` 的合法取值**因 `item_type` 而异**，传错会收到警告：
+
+| item_type | 合法取值 |
+|:--|:--|
+| `repos` | `forks`、`help-wanted-issues`、`stars`、`updated` |
+| `issues` | `comments`、`created`、`interactions`、`reactions`、`reactions-+1`、`reactions--1`、`reactions-heart`、`reactions-smile`、`reactions-tada`、`reactions-thinking_face`、`updated` |
+| `prs` | `comments`、`reactions`、`reactions-+1`、`reactions--1`、`reactions-smile`、`reactions-thinking_face`、`reactions-heart`、`reactions-tada`、`interactions`、`created`、`updated` |
+| `commits` | `author-date`、`committer-date` |
+| `code` | （不支持） |
+
+#### 3.5 声明式 YAML 配置 (`--config`)
 
 无需死记硬背枯燥的命令参数，你可以将自己高频使用的、或者是极为复杂的检索条件永久保存为 `.yaml` 文件：
 
@@ -692,9 +947,16 @@ ghresearcher search [选项] [搜寻类型] [查询语句]
 ghresearcher search --config examples/search_ai_repos.yaml
 ```
 
-*注意：如果在执行时同时附加了 CLI 参数（如 `-l 5`），CLI 参数将具有最高优先级，会自动覆盖 YAML 中的对应字段。*
+YAML 中的字段名与 CLI 长参数一一对应（下划线 `_` 换成连字符 `-`，如 `good_first_issues` ↔ `--good-first-issues`）。CLI 参数覆盖 YAML 的规则：**仅当你在命令行显式传入某个参数时，它才覆盖 YAML 中的对应字段**；未传入的参数一律沿用 YAML 的值（无 YAML 时用默认值）。
 
-#### 实用场景与配置案例
+#### 3.6 内置校验
+
+GhResearcher 在真正调用 `gh search` 前会做两层校验，提前暴露错误：
+
+1. **字段名校验**：YAML 里出现未知字段（如拼写错误的 `langauge`）会打印警告，提示该字段可能被 gh 忽略。
+2. **排序值校验**：`--sort` 传了非法值，会列出该类型所有合法取值。
+
+#### 3.7  实用场景与配置案例
 
 **场景 A: 挖掘高质量开源项目 (`repos`)**
 寻找某个领域高赞的 Python 仓库。
@@ -712,6 +974,35 @@ ghresearcher search --config examples/search_ai_repos.yaml
   ```bash
   ghresearcher search repos "LLM agent" -L Python -t artificial-intelligence -s stars -O desc -l 20
   ```
+
+运行效果如下:
+```
+Searching repos for 'LLM agent'...
+Running command: gh search repos LLM agent --limit 20 --sort stars --order desc --language Python --topic artificial-intelligence
+melih-unsal/DemoGPT     🤖 Create LLM agents in a second with your prompts. Everything you need to create an LLM Agent - tools, prompts, frameworks, and models - all in one place.     public  2026-08-24T14:42:12Z
+zjunlp/MachineSoM       [ACL 2024] Exploring Collaboration Mechanisms for LLM Agents: A Social Psychology View  public  2026-08-24T00:29:11Z
+AkshitIreddy/AI-Plays-God-of-War        LLM Agent paired with Image Captioning and Yolov8 models plays God of War       public  2026-06-26T17:00:05Z
+firelink-data/drive     🚀✨ DRIVE, the tool for creating and managing autonomous LLM agents; implemented using Apache Kafka, Docker, and LangChain.    public  2025-03-07T17:54:37Z
+jake12-cpu/AI-Desktop-Companion 基于 LLM Agent 的智能桌面陪伴系统，实现角色人格控制、长期记忆管理和自然语言交互。       public  2026-07-16T08:39:20Z
+Atakan-Emre/McpTestGenerator    Standardized Test Case Generation for LLM Agents via Model Context Protocol. Bridging the gap between AI and QA (Xray/Jira).    public  2026-05-25T09:42:37Z
+yuliu625/Yu-Agent-Development-Toolkit   A robust, engineering-focused toolkit for building stable, complex LLM Agents. Built on the LangChain + LangGraph ecosystem for superior flow control and production readiness. public  2026-08-15T11:56:21Z
+AbdulSamad502/InsightForge-AI   Production-ready AI-powered Business Intelligence platform using LangGraph, LangChain, FastAPI, PostgreSQL, and LLM agents for automated data analysis, insights generation, forecasting, and reporting.ai-data-analyst syste,  public  2026-08-15T08:21:57Z
+mr-j90/PaperTrace       An AI research assistant over the ~12,500 arXiv papers on RAG, LLM agents, LLM evaluation, and LLMOps — the literature about the very techniques it's built from. Ask it a question and watch it think: an agent visibly rewrites your query, chooses tools, gathers evidence across papers.    public  2026-08-18T13:54:57Z
+AnuragRoque/ExcelliaAI-MCP      AI-Powered Spreadsheet Validation & Data Quality Platform Excellia AI is a local-first, AI-driven spreadsheet validation platform built to automate data cleaning, validation, anomaly detection, and enrichment for large datasets. It combines rule-based checks, machine learning, and local LLM agents to drastically reduce manual analyst effort. public  2026-08-15T10:10:44Z
+varunbiluri/fastapi-tool-agent-clean    Production LLM agent with FastAPI, Azure OpenAI, tool use, CI/CD & Key Vault    public  2026-07-11T16:39:35Z
+grimdalltech/MemLens    Memory observability for LLM agents—trace what they remember, why, and how it shapes every response.    public  2026-08-19T16:57:46Z
+sunyifei-126/EvoGate-RSI        Evidence-gated Recursive Self-Improvement (RSI) runtime for self-improving LLM agents, self-evolving agents, agentic AI, AI safety, evaluation, lineage, and rollback.  public  2026-08-10T09:25:08Z
+MarcoLombardoDev/Argus  AI-powered desktop application for cryptocurrency forecasting, multi-agent market analysis, backtesting, portfolio management, and automated trading. Combines TimesFM 2.5, KNN pattern matching, LLM agents, quantitative analysis, and CCXT.  public  2026-08-25T11:03:05Z
+LPK3215/agentbase       AI Agent 智能体脚手架 · LLM Agent 框架 / 项目脚手架. Configuration-driven AI Agent backend on deepagents + LangChain + LangGraph. YAML config, pluggable registries, CLI, FastAPI (21 routes), RAG knowledge base, MCP, queue, Docker. Build production-grade intelligent agents without boilerplate.   public  2026-08-25T06:58:40Z
+k0n1m4k1/kv-memory-modules      Precompiled KV memory modules for LLM agents: compile Markdown memories once into relocatable, composable KV-state artifacts (.kmd) and link them at any position of a live context, no re-prefill. 7.0-27.6x faster session setup; validated on 9 models (2B-14B) over stock llama.cpp and vLLM.       public  2026-08-25T20:21:47Z
+ioanfesteu/multiagent_LLM       Caretaker LLM agent meets Active Inference agents       public  2026-02-23T17:35:25Z
+virbahu/chatgpt-supply-chain-agent      LLM agent framework for supply chain decision support and automation    public  2026-06-08T02:33:53Z
+VenkatLaxmi-code/eco-loop-building-agents       Autonomous AI-powered smart building energy control system using EnergyPlus, LLM agents, MCP, and closed-loop optimization.     public  2026-07-26T16:08:21Z
+FarazIbrahim/agentic-due-diligence      Multi-Agent AI Due Diligence Platform for Startup Investment Analysis using Multiple LLMs, Agentic Workflows, and Structured Evaluation Frameworks.     public  2026-07-23T05:47:57Z
+
+
+```
+
 
 **场景 B: 定点代码段探索 (`code`)**
 精细化排查指定仓库内的遗留问题（如源码内的 TODO 注释）。*注意：代码搜索由 GitHub 传统代码搜索引擎驱动。*
@@ -744,22 +1035,55 @@ ghresearcher search --config examples/search_ai_repos.yaml
   ghresearcher search prs "fix bug state:merged" -o microsoft -O desc -l 40
   ```
 
-#### 各搜索域 YAML 模板全参数详解
+**场景 D: 结构化 JSON 输出 + jq 二次过滤 (`repos`)**
+直接拿到机器可读的字段，再用 jq 精简出想要的列，方便接入脚本或管道。
+```bash
+# 输出指定 JSON 字段
+ghresearcher search repos "protein design" -L Python --json "fullName,stargazersCount,description" -l 10
+
+# 配合 jq 只保留仓库名
+ghresearcher search repos "protein design" -L Python --json "fullName,stargazersCount" --jq ".[] | .fullName" -l 10
+```
+
+**场景 E: 布尔存在标志与带值布尔 (`prs` / `repos`)**
+- 只找微软组织里「已合并」的草稿 PR：
+  ```bash
+  ghresearcher search prs "fix" -o microsoft --merged --draft -l 20
+  ```
+- 只找「未归档」的公开仓库（`--archived` 是带值布尔，必须显式写 `false`）：
+  ```bash
+  ghresearcher search repos "deep learning" --archived false --visibility public -l 20
+  ```
+
+**场景 F: 纯 flag 过滤（省略 query）**
+`repos`/`issues`/`prs`/`commits` 允许省略关键词，只看满足条件的对象。
+```bash
+ghresearcher search repos -o microsoft --visibility public -s stars -l 10
+```
+
+#### 3.8  各搜索域 YAML 模板全参数详解
 
 对于每种 `item_type`，我们提供了一份“全参数覆盖”的通用模板（全面囊括官方支持的所有 Options 与 JSON 字段选项）。实际使用时，你只需保留需要的参数，其余删除或注释掉即可。这些模板均已预置在 `examples/` 目录下（`template_*.yaml`）。
+
+> **关于布尔标志的两种类型**（详见 §3.3）：
+> - **带值布尔**（如 `archived`）：必须写成 `archived: false` 或 `archived: true`，会被转成 `--archived=false/true`。
+> - **存在标志**（如 `draft`/`merged`/`no_assignee`）：写成 `true` 时追加 `--flag`，写成 `false` 时省略该 flag（不会拼成 `--flag=false`）。
+>
+> **注意：`code` 搜索不支持 `sort` 与 `order`**（`gh search code` 原生无此二 flag），模板中已省略，写入也会被自动忽略并给出警告。
 
 **1. 仓库搜索 (`repos`)**
 ```yaml
 item_type: repos
 query: "machine learning"  # 核心搜索词
 
-# 控制层
+# 结果控制
 limit: 30
-sort: stars
-order: desc
+sort: stars                # forks | help-wanted-issues | stars | updated
+order: desc                # asc | desc
 
 # 布尔标志
-archived: false
+archived: false            # 带值布尔，显式 true | false
+include_forks: "false"     # 可选: false | true | only
 
 # 限定层
 language: python
@@ -771,7 +1095,6 @@ followers: ">=5"
 forks: ">=10"
 good_first_issues: ">=5"
 help_wanted_issues: ">=10"
-include_forks: "false" # 可选: false, true, or only
 license: "mit"
 number_topics: ">=2"
 size: "5000..10000"
@@ -780,6 +1103,7 @@ updated: ">=2023-01-01"
 visibility: "public"
 
 # 输出格式化层
+# web: true                # 直接在浏览器打开搜索页
 # json: ["id", "name", "owner", "stargazersCount", "description"]
 # jq: ".[] | .name"
 # template: "{{.name}}"
@@ -788,21 +1112,23 @@ visibility: "public"
 **2. 代码搜索 (`code`)**
 ```yaml
 item_type: code
-query: "TODO"              
+query: "TODO"               # code 搜索必须提供 query，不能省略
 
-# 控制层
+# 结果控制
 limit: 30
+# 注意：code 搜索不支持 sort / order
 
 # 限定层
-language: python           
-owner: MaybeBio            
-repo: MaybeBio/GhResearcher 
-extension: py              
-filename: main.py          
-match: file                
+language: python
+owner: MaybeBio
+repo: MaybeBio/GhResearcher
+extension: py
+filename: main.py
+match: file
 size: "1..50"
 
 # 输出格式化层
+# web: true                # 直接在浏览器打开搜索页
 # json: ["url", "path", "repository", "sha"]
 # jq: ".[] | .path"
 # template: "{{.path}}"
@@ -811,17 +1137,21 @@ size: "1..50"
 **3. Issues 搜索 (`issues`)**
 ```yaml
 item_type: issues
-query: "crash label:bug is:open"     
+query: "crash label:bug is:open"
 
-# 控制层
+# 结果控制
 limit: 30
-sort: comments             
-order: desc
+sort: comments             # comments | created | interactions | reactions | reactions-+1 | reactions--1 | reactions-heart | reactions-smile | reactions-tada | reactions-thinking_face | updated
+order: desc                # asc | desc
 
 # 布尔标志
-archived: false
-include_prs: false
-locked: false
+archived: false            # 带值布尔，显式 true | false
+include_prs: false         # 存在标志
+locked: false              # 存在标志
+no_assignee: false         # 存在标志
+no_label: false            # 存在标志
+no_milestone: false        # 存在标志
+no_project: false          # 存在标志
 
 # 限定层
 app: "some-app"
@@ -834,24 +1164,21 @@ created: ">=2023-01-01"
 interactions: ">=10"
 involves: "MaybeBio"
 label: "bug"
-language: python              
-match: title               
+language: python
+match: title
 mentions: "MaybeBio"
 milestone: "v1.0"
-no_assignee: false
-no_label: false
-no_milestone: false
-no_project: false
-owner: MaybeBio           
+owner: MaybeBio
 project: "MaybeBio/1"
 reactions: ">=5"
-repo: MaybeBio/GhResearcher   
+repo: MaybeBio/GhResearcher
 state: "open"
 team_mentions: "my-team"
 updated: ">=2023-01-01"
 visibility: "public"
 
 # 输出格式化层
+# web: true                # 直接在浏览器打开搜索页
 # json: ["id", "title", "state", "url"]
 # jq: ".[] | .title"
 # template: "{{.title}}"
@@ -860,25 +1187,29 @@ visibility: "public"
 **4. Pull Requests 搜索 (`prs`)**
 ```yaml
 item_type: prs
-query: "fix memory leak is:merged" 
+query: "fix memory leak is:merged"
 
-# 控制层
-limit: 30 
-sort: updated              
-order: desc
+# 结果控制
+limit: 30
+sort: updated              # comments | created | interactions | reactions | reactions-+1 | reactions--1 | reactions-heart | reactions-smile | reactions-tada | reactions-thinking_face | updated
+order: desc                # asc | desc
 
 # 布尔标志
-archived: false
-draft: false
-locked: false
-merged: true
+archived: false            # 带值布尔，显式 true | false
+draft: false               # 存在标志
+locked: false              # 存在标志
+merged: true               # 存在标志
+no_assignee: false         # 存在标志
+no_label: false            # 存在标志
+no_milestone: false        # 存在标志
+no_project: false          # 存在标志
 
 # 限定层
 app: "some-app"
 assignee: "MaybeBio"
 author: "MaybeBio"
 base: "main"
-checks: "success" # pending, success, failure
+checks: "success" # pending | success | failure
 closed: ">=2023-01-01"
 commenter: "MaybeBio"
 comments: ">=5"
@@ -887,20 +1218,16 @@ head: "feature-branch"
 interactions: ">=10"
 involves: "MaybeBio"
 label: "bug"
-language: cpp             
-match: body                
+language: cpp
+match: body
 mentions: "MaybeBio"
 merged_at: ">=2023-01-01"
 milestone: "v1.0"
-no_assignee: false
-no_label: false
-no_milestone: false
-no_project: false
-owner: microsoft          
+owner: microsoft
 project: "microsoft/1"
 reactions: ">=5"
-repo: microsoft/terminal  
-review: "approved" # none, required, approved, changes_requested
+repo: microsoft/terminal
+review: "approved" # none | required | approved | changes_requested
 review_requested: "MaybeBio"
 reviewed_by: "MaybeBio"
 state: "closed"
@@ -909,6 +1236,7 @@ updated: ">=2023-01-01"
 visibility: "public"
 
 # 输出格式化层
+# web: true                # 直接在浏览器打开搜索页
 # json: ["id", "title", "state", "url"]
 # jq: ".[] | .title"
 # template: "{{.title}}"
@@ -917,15 +1245,15 @@ visibility: "public"
 **5. Commits 提交搜索 (`commits`)**
 ```yaml
 item_type: commits
-query: "Initial commit"    
+query: "Initial commit"
 
-# 控制层
+# 结果控制
 limit: 30
-sort: author-date          
-order: desc
+sort: author-date          # author-date | committer-date
+order: desc                # asc | desc
 
 # 布尔标志
-merge: false
+merge: false               # 存在标志
 
 # 限定层
 author: "MaybeBio"
@@ -937,23 +1265,28 @@ committer_date: ">=2023-01-01"
 committer_email: "test@example.com"
 committer_name: "John Doe"
 hash: "8dd03144ffdc6c0d486d6b705f9c7fba871ee7c3"
-owner: MaybeBio 
+owner: MaybeBio
 parent: "parent_hash"
 repo: MaybeBio/GhResearcher
 tree: "tree_hash"
 visibility: "public"
 
 # 输出格式化层
+# web: true                # 直接在浏览器打开搜索页
 # json: ["id", "commit", "author", "url"]
 # jq: ".[] | .commit.message"
 # template: "{{.commit.message}}"
 ```
 
-#### 提示与注意事项
+#### 3.9  提示与注意事项
 - **精确匹配:** 请使用双引号包含需精确检索的短语结构（例 `"memory leak"`）。
 - **逻辑运算:** 限定词支持 `OR`，以及通过前置横杠 `-` 排除（如 `bug OR error`, `-wip`）。
   *警告:* 若你的查询字符串本体直接以 `-` 起始，终端命令行可能会将其误识别为 Flag 参数（Unix 需使用 `--` 隔断，PowerShell 需使用 `--%`）。
-- **域边界差异:** 不同搜索类型（item_type）可用的过滤器并不通用。例如 `--topic` 仅能查 `repos`，而 `--extension` 仅能查 `code`。
+- **域边界差异:** 不同搜索类型（item_type）可用的过滤器并不通用。例如 `--topic` 仅能查 `repos`，`--extension` 仅能查 `code`，而 `--sort`/`--order` 不支持 `code`。
+- **布尔标志两类写法:** 带值布尔（如 `archived`）必须显式写 `true/false`；存在标志（如 `draft`/`merged`/`no_assignee`）写 `true` 时追加 `--flag`、写 `false` 时省略，绝不会拼成 `--flag=false`。
+- **内置校验:** 工具会针对每个 `item_type` 校验字段名与 `sort` 取值。遇到未知字段或非法 `sort` 值会打印黄色 `Warning` 提示，但不会中断执行（仍会把参数透传给 `gh`）。
+- **CLI 优先于 YAML:** 同名参数同时出现时，命令行传入的值会覆盖 YAML 中的值（其余 YAML 参数仍生效）。
+- **query 何时必填:** `repos`/`issues`/`prs`/`commits` 允许省略 `query`（纯 flag 过滤）；但 `code` 搜索必须提供 `query`，否则会报错。
 - **参考资料:** 想深究更详尽的 Qualifiers 映射支持表，可直接翻阅仓库 `docs/` 下收集的 GitHub 官方手册 (`docs_github_com_en_search-github_*`)。
 
 
@@ -1034,10 +1367,12 @@ ghfollow() {
 - tmux/screen持久会话，定时打印结果到常驻终端窗口：上一条方案crontab和systemd 本身不能直接输出到交互shell终端，是后台守护进程，有自己独立会话，输出只能写文件然后再事后看，没法直接打印到我们当前ssh终端屏幕中。如果真要实现比如说`9点直接输出在shell终端`，就需要在定时任务中调用 `tmux` 或 `screen` 来实现。具体做法是：在定时任务中执行一个 `tmux send-keys` 命令，将我们上面定义的 shell 函数命令发送到指定的 `tmux` 会话中去执行，这样随时接入tmux窗口，就能在当前终端看到输出了
 - 既要定时执行又要Git仓库持久化存储：最好的方法就是用github actions，直接在github actions中写一个workflow，定时执行上述命令，并将输出结果保存到仓库中，这样就可以实现既定时执行又有持久化存储的效果
 
-> 总而言之，目前我个人的做法是：本地简易执行即可，不需要定时操作记录（bashrc或zshrc中封装个函数即可）；要做长期化的定时任务，重点在github actions
+> 总而言之，目前我个人的做法是：本地简易执行即可，不需要定时操作记录（bashrc或zshrc中封装个函数即可）；要做长期化的定时任务，重点在github actions (推荐持久记录)
 
 ## 😄 Todo
 
 - [ ] `monitor`/`parse` 命令基本上没问题，但 `search` 命令还需要进一步测试和优化，尤其是 YAML 配置的解析和 CLI 参数覆盖逻辑，需要确保在各种组合下都能正确工作，以及在操作上尽可能比 `gh search` 更加简洁和易用
-- [ ] README 文档暂时只更新中文，后续升级同步更进
+- [ ] README 文档暂时只更新中文，后续升级同步更进英文版
 - [ ] 对于`parse`功能的进一步拓展，对于仓库解析，也许可以集成和借鉴一些现有的代码分析工具，提供更丰富的解析结果，比如代码依赖关系图、函数调用图、AST分析等 
+- [x] 修改rich输出 限制列宽的问题，尤其是当输出内容过长时，rich的表格显示可能会被截断或换行，影响可读性，需要进一步优化，最好是一行完整输出不换行
+- [ ] 一些功能的进一步优化，可以考虑以`GitHub CLI extension`的形式发布或实现，让用户可以直接通过`gh extension install`来安装和使用，而不需要额外的Python环境配置，具体参考：https://github.com/topics/gh-extension
