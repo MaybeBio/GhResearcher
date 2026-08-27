@@ -972,6 +972,75 @@ Pinpoint legacy issues (e.g. TODO comments) inside a specific repo. *Note: code 
   ghresearcher search code "TODO" -r MaybeBio/GhResearcher -f "*.py" -e py -l 50
   ```
 
+An example:
+```shell 
+ghresearcher search --config search_idr_code.yaml
+```
+
+Running output:
+```
+Searching code for 'intrinsically disordered prediction' (via search_idr_code.yaml)...
+Running command: gh search code intrinsically disordered prediction --limit 30 --json path,repository,url
+[
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnkxODU5MTM4MDk=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'yangkky/Machine-learning-for-proteins',
+            'url': 'https://github.com/yangkky/Machine-learning-for-proteins'
+        },
+        'url': 'https://github.com/yangkky/Machine-learning-for-proteins/blob/4afcaab06caeae1dbc8b976148f8fe48fab1d4ae/README.md'
+    },
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk3ODMyMzcwMTY=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'hyperai/awesome-ai4s',
+            'url': 'https://github.com/hyperai/awesome-ai4s'
+        },
+        'url': 'https://github.com/hyperai/awesome-ai4s/blob/3793b89cf9b7397fce2fcb41d78ae52a378f6817/README.md'
+    },
+    {
+        'path': 'README_CN.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk3ODMyMzcwMTY=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'hyperai/awesome-ai4s',
+            'url': 'https://github.com/hyperai/awesome-ai4s'
+        },
+        'url': 'https://github.com/hyperai/awesome-ai4s/blob/3793b89cf9b7397fce2fcb41d78ae52a378f6817/README_CN.md'
+    },
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk1NzQ1ODM2MTA=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'idptools/finches',
+            'url': 'https://github.com/idptools/finches'
+        },
+        'url': 'https://github.com/idptools/finches/blob/be9269e2b5030fd474723a3bca421a26e07bb999/README.md'
+    },
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk1NDU5MTM3NjY=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'LirongWu/awesome-protein-representation-learning',
+            'url': 'https://github.com/LirongWu/awesome-protein-representation-learning'
+        },
+        'url': 'https://github.com/LirongWu/awesome-protein-representation-learning/blob/97d848f9bbcde020070a41189f9e317c4ffeee32/README.md'
+    },
+    ...
+```
+
+
 **Scenario C: Tracking Issues & PRs (`issues` / `prs`)**
 Track recently merged bug fixes inside a large organization.
 - **YAML Config (`examples/search_bug_prs.yaml`):**
@@ -1326,8 +1395,8 @@ The resulting directory structure looks like:
 
 ## 😄 Todo
 
-- [ ] The `monitor`/`parse` commands are basically solid, but `search` still needs more testing and optimization — especially YAML config parsing and the CLI-overrides-YAML logic, ensuring correct behavior across all combinations, and making it as concise and user-friendly as possible compared to `gh search`.
-- [ ] The README has only been updated in Chinese for now; the English version will be synced in a later update.
+- [x] The `monitor`/`parse` commands are basically solid, but `search` still needs more testing and optimization — especially YAML config parsing and the CLI-overrides-YAML logic, ensuring correct behavior across all combinations, and making it as concise and user-friendly as possible compared to `gh search`.
+- [x] The README has only been updated in Chinese for now; the English version will be synced in a later update.
 - [ ] Further extend `parse`: for repository parsing, consider integrating or borrowing from existing code-analysis tools to provide richer results, such as dependency graphs, call graphs, AST analysis, etc.
 - [x] Fix the Rich output column-width issue — when output is too long, Rich tables may be truncated or wrapped, hurting readability; prefer one full line per row without wrapping.
 - [ ] Optimize further by publishing/implementing as a `GitHub CLI extension`, so users can install via `gh extension install` without a separate Python environment. See: https://github.com/topics/gh-extension | https://cli.github.com/manual/

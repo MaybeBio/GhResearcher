@@ -1020,6 +1020,73 @@ FarazIbrahim/agentic-due-diligence      Multi-Agent AI Due Diligence Platform fo
   ghresearcher search code "TODO" -r MaybeBio/GhResearcher -f "*.py" -e py -l 50
   ```
 
+示例：
+```shell 
+ghresearcher search --config search_idr_code.yaml
+```
+输出如下:
+```
+Searching code for 'intrinsically disordered prediction' (via search_idr_code.yaml)...
+Running command: gh search code intrinsically disordered prediction --limit 30 --json path,repository,url
+[
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnkxODU5MTM4MDk=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'yangkky/Machine-learning-for-proteins',
+            'url': 'https://github.com/yangkky/Machine-learning-for-proteins'
+        },
+        'url': 'https://github.com/yangkky/Machine-learning-for-proteins/blob/4afcaab06caeae1dbc8b976148f8fe48fab1d4ae/README.md'
+    },
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk3ODMyMzcwMTY=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'hyperai/awesome-ai4s',
+            'url': 'https://github.com/hyperai/awesome-ai4s'
+        },
+        'url': 'https://github.com/hyperai/awesome-ai4s/blob/3793b89cf9b7397fce2fcb41d78ae52a378f6817/README.md'
+    },
+    {
+        'path': 'README_CN.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk3ODMyMzcwMTY=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'hyperai/awesome-ai4s',
+            'url': 'https://github.com/hyperai/awesome-ai4s'
+        },
+        'url': 'https://github.com/hyperai/awesome-ai4s/blob/3793b89cf9b7397fce2fcb41d78ae52a378f6817/README_CN.md'
+    },
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk1NzQ1ODM2MTA=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'idptools/finches',
+            'url': 'https://github.com/idptools/finches'
+        },
+        'url': 'https://github.com/idptools/finches/blob/be9269e2b5030fd474723a3bca421a26e07bb999/README.md'
+    },
+    {
+        'path': 'README.md',
+        'repository': {
+            'id': 'MDEwOlJlcG9zaXRvcnk1NDU5MTM3NjY=',
+            'isFork': False,
+            'isPrivate': False,
+            'nameWithOwner': 'LirongWu/awesome-protein-representation-learning',
+            'url': 'https://github.com/LirongWu/awesome-protein-representation-learning'
+        },
+        'url': 'https://github.com/LirongWu/awesome-protein-representation-learning/blob/97d848f9bbcde020070a41189f9e317c4ffeee32/README.md'
+    },
+    ...
+```
+
 **场景 C: Issues & PRs 动态跟踪 (`issues` / `prs`)**
 追踪庞大组织最近合并修复的 Bug 信息。
 - **YAML 配置文件 (`examples/search_bug_prs.yaml`):**
@@ -1371,8 +1438,8 @@ ghfollow() {
 
 ## 😄 Todo
 
-- [ ] `monitor`/`parse` 命令基本上没问题，但 `search` 命令还需要进一步测试和优化，尤其是 YAML 配置的解析和 CLI 参数覆盖逻辑，需要确保在各种组合下都能正确工作，以及在操作上尽可能比 `gh search` 更加简洁和易用
-- [ ] README 文档暂时只更新中文，后续升级同步更进英文版
+- [x] `monitor`/`parse` 命令基本上没问题，但 `search` 命令还需要进一步测试和优化，尤其是 YAML 配置的解析和 CLI 参数覆盖逻辑，需要确保在各种组合下都能正确工作，以及在操作上尽可能比 `gh search` 更加简洁和易用
+- [x] README 文档暂时只更新中文，后续升级同步更进英文版
 - [ ] 对于`parse`功能的进一步拓展，对于仓库解析，也许可以集成和借鉴一些现有的代码分析工具，提供更丰富的解析结果，比如代码依赖关系图、函数调用图、AST分析等 
 - [x] 修改rich输出 限制列宽的问题，尤其是当输出内容过长时，rich的表格显示可能会被截断或换行，影响可读性，需要进一步优化，最好是一行完整输出不换行
 - [ ] 一些功能的进一步优化，可以考虑以`GitHub CLI extension`的形式发布或实现，让用户可以直接通过`gh extension install`来安装和使用，而不需要额外的Python环境配置，具体参考：https://github.com/topics/gh-extension | https://cli.github.com/manual/
