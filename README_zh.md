@@ -1355,6 +1355,7 @@ visibility: "public"
 - **CLI 优先于 YAML:** 同名参数同时出现时，命令行传入的值会覆盖 YAML 中的值（其余 YAML 参数仍生效）。
 - **query 何时必填:** `repos`/`issues`/`prs`/`commits` 允许省略 `query`（纯 flag 过滤）；但 `code` 搜索必须提供 `query`，否则会报错。
 - **参考资料:** 想深究更详尽的 Qualifiers 映射支持表，可直接翻阅仓库 `docs/` 下收集的 GitHub 官方手册 (`docs_github_com_en_search-github_*`)。
+- **query中引号的使用:** repo 的 query 可以放心写引号短语('protein dna binding' 是 protein AND dna AND binding, '"protein dna binding"' 则是一个固定短语protein dna binding )；code 的 query 永远别写引号，用空格分隔单词即可 ('protein dna binding' 是 protein AND dna AND binding)
 
 
 ## ⏰ 动态更新自动化

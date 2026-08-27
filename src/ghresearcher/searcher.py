@@ -124,8 +124,12 @@ def search_github(item_type: str, query: str, config: dict):
 
     cmd = ["search", item_type]
     if query:
-        # cmd.append(query)
-        cmd.extend(query.split())
+        # ⚠️ Note: type code split here but never input "" string
+        if item_type == "code":
+            cmd.extend(query.split())
+        # for type repo or other non-code type item
+        else:   
+            cmd.append(query)
 
     use_web = config.get("web", False)
 
