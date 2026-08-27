@@ -124,7 +124,8 @@ def search_github(item_type: str, query: str, config: dict):
 
     cmd = ["search", item_type]
     if query:
-        cmd.append(query)
+        # cmd.append(query)
+        cmd.extend(query.split())
 
     use_web = config.get("web", False)
 
